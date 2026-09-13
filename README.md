@@ -9,11 +9,25 @@ This repository holds the open canon (the methodology, written as theses) and a 
 
 ---
 
-## How to start
+## Where to start
 
 1. **Install it** — run the install command from [Install into your project ▸](#install-into-your-project). The macOS / Linux one-liner, the `git clone` route, and the Windows PowerShell installer are all there.
 
-2. **Then run `/nmt-chat`** (Claude Code) or `$nmt-chat` (Codex). It's the human front door to the whole methodology: **paste whatever you have** — a half-formed idea, messy notes, a chat thread, a doc — and it pulls out the context, separates what you *know* from what you're *assuming*, and gives you the next concrete move. No methodologically-perfect brief required.
+2. **Then run `/nmt-chat`** (Claude Code) or `$nmt-chat` (Codex). **Start with `/nmt-chat` — it routes you to the right skill.** It's the human front door to the whole methodology: **paste whatever you have** — a half-formed idea, messy notes, a chat thread, a doc — and it pulls out the context, separates what you *know* from what you're *assuming*, and gives you the next concrete move. No methodologically-perfect brief required.
+
+Where each starting point leads (Claude Code: `/name` · Codex: `$name`):
+
+```
+new idea            ->  /nmt-chat  ->  /nmt-market-research
+                    ->  /nmt-craft-value-proposition
+                    ->  /nmt-product-requirements
+                    ->  /nmt-craft-go-to-market
+live product        ->  /nmt-diagnose
+interviews on disk  ->  /nmt-analyze-interviews
+update everything   ->  /nmt-update
+```
+
+Jump in wherever you already are — each skill takes what you hand it, or routes you back to the step it needs first.
 
 ---
 
@@ -113,7 +127,7 @@ The `Skills/` directory holds the skills that run the methodology for you — a 
 
 You can also jump in mid-pipeline if you already know your segment and Jobs. Each skill takes what you hand it, or routes you back to the step it needs first.
 
-All seven are **user-invocable** — in Claude Code as `/nmt-chat`, `/nmt-diagnose`, `/nmt-market-research`, `/nmt-craft-value-proposition`, `/nmt-product-requirements`, `/nmt-craft-go-to-market`, `/nmt-analyze-interviews`; in Codex as the same names with a `$` (`$nmt-diagnose`, …), or pick them from `/skills`. The shared `nmt-` prefix keeps the whole family together in the picker. The four producers each have a fast **Quick** mode (no internet) and a deeper **Deep** mode (web research; parallel sub-agents on Claude Code, sequential on Codex). `/nmt-chat` and `/nmt-diagnose` are conversational (no file unless you ask).
+All seven are **user-invocable** — in Claude Code as `/nmt-chat`, `/nmt-diagnose`, `/nmt-market-research`, `/nmt-craft-value-proposition`, `/nmt-product-requirements`, `/nmt-craft-go-to-market`, `/nmt-analyze-interviews`; in Codex as the same names with a `$` (`$nmt-diagnose`, …), or pick them from `/skills`. An eighth, **`/nmt-update`**, is the updater — it pulls the latest canon + skills from this repo (see [Updates & telemetry ▸](#updates--telemetry)). The shared `nmt-` prefix keeps the whole family together in the picker. The four producers each have a fast **Quick** mode (no internet) and a deeper **Deep** mode (web research; parallel sub-agents on Claude Code, sequential on Codex). `/nmt-chat` and `/nmt-diagnose` are conversational (no file unless you ask).
 
 > The skills produce **hypotheses, not conclusions.** Every number is an LLM-generated estimate with a verification path attached. Validate before any decision with expensive consequences. That's the RAT discipline the methodology is built on.
 
@@ -124,10 +138,16 @@ Install the canon + skills **into the root of your existing project** (the folde
 **macOS / Linux:**
 
 ```bash
-curl -fsSL https://nextmovetheory.com/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/zamesin/Next-Move-Theory-Canon-and-Skills/main/install.sh | bash
 ```
 
-**Windows (PowerShell):** clone the repo, then run the PowerShell installer:
+**Windows (PowerShell):**
+
+```powershell
+irm https://raw.githubusercontent.com/zamesin/Next-Move-Theory-Canon-and-Skills/main/install.ps1 | iex
+```
+
+Or clone the repo first and run the installer from the clone:
 
 ```powershell
 git clone https://github.com/zamesin/Next-Move-Theory-Canon-and-Skills
@@ -161,7 +181,7 @@ $nmt-diagnose            # Codex — same skill
 /nmt-market-research a tool that drafts SOC 2 evidence for early-stage SaaS
 ```
 
-**Updating later:** re-run the install command. It's **idempotent**: the canon and skills are replaced, the rules between `<!-- Next-Move-Theory-Rules:start -->` … `<!-- Next-Move-Theory-Rules:end -->` are refreshed in place, and your own text outside the markers is untouched.
+**Updating later:** run **`/nmt-update`** (Codex: `$nmt-update`), or re-run the install command. It's **idempotent**: the canon and skills are replaced, the rules between `<!-- Next-Move-Theory-Rules:start -->` … `<!-- Next-Move-Theory-Rules:end -->` are refreshed in place, and your own text outside the markers is untouched. See [Updates & telemetry ▸](#updates--telemetry).
 
 > **Note for AI agents:** if a user asks you to "install this repo," do **not** stop at `git clone`. That leaves the skills in a nested `Skills/` folder where no agent will find them. Run the one-command installer (`bash install.sh` on macOS/Linux, `install.ps1` on Windows). The skills must end up in `.claude/skills/` (Claude Code) and `.agents/skills/` (Codex) at the project root, never in a top-level `Skills/` folder.
 
@@ -177,10 +197,31 @@ mkdir -p .claude/skills .agents/skills
 cp -r "$SRC"/Skills/claude/. .claude/skills/   # Claude Code copy
 cp -r "$SRC"/Skills/codex/.  .agents/skills/   # Codex copy
 cp "$SRC/README.md" ./NextMoveTheory-README.md
-# then inject the rules block from "$SRC/CLAUDE.md" and "$SRC/AGENTS.md" between the markers
+# then inject the short rules block (the installer carries it inline) between the
+# markers in ./CLAUDE.md and ./AGENTS.md
 rm -rf "$SRC"
 ```
 </details>
+
+---
+
+## Updates & telemetry
+
+**At the end of a run, each skill checks whether a newer version is published.** The check is best-effort: it takes at most two seconds, and if it fails or times out the skill simply moves on.
+
+**The request sends ONLY the skill name and the installed version.** Nothing else is collected — no project content, no file names, no prompts, no answers, no personal data. Nothing you or a skill wrote ever leaves your machine.
+
+**The purpose is to improve the skills** — to see which of them people actually run and how many are on an old version, so effort goes where it's used.
+
+**Updates themselves download from the public GitHub repo**, [`zamesin/Next-Move-Theory-Canon-and-Skills`](https://github.com/zamesin/Next-Move-Theory-Canon-and-Skills) — never from anywhere else. The version check and the download are separate things; the check only tells you a newer version exists.
+
+**How to disable it.** Any one of these turns the check off completely:
+
+- add a line `update-check: off` to a file named `.nmt-config` in your project root;
+- set the environment variable `DO_NOT_TRACK=1`;
+- set the environment variable `NMT_NO_UPDATE_CHECK=1`.
+
+**How to update.** Run **`/nmt-update`** (Codex: `$nmt-update`). It reads the latest published version from this repo's changelog, then re-runs the installer from GitHub — refreshing the canon, the skills, the marked rules block, and the README in place, and leaving your own files untouched. Re-running the install command by hand does exactly the same thing.
 
 ---
 
@@ -189,8 +230,8 @@ rm -rf "$SRC"
 This repo also ships **[`CLAUDE.md`](CLAUDE.md)** and **[`AGENTS.md`](AGENTS.md)**, a compact rules file that teaches a coding agent (Claude Code, Codex, Cursor, and others) to do product work with *this* methodology instead of the generic, often-wrong Jobs To Be Done in its training data.
 
 - **What it is** — the non-negotiable theses (what a Job is, what value is, how to segment) plus a routing table that tells the agent *which canon file to read* for a given task, so it avoids the common JTBD mistakes.
-- **How to use it** — the install above injects it for you: step 4 writes these rules into your project's `CLAUDE.md` (Claude Code) and `AGENTS.md` (Codex and most other agents), between `<!-- Next-Move-Theory-Rules:start -->` … `<!-- Next-Move-Theory-Rules:end -->` markers, so updates refresh cleanly and your own rules outside the markers stay intact. The canon it routes to sits at `./Next-Move-Theory-Canon`.
-- **Why** — out of the box an agent pattern-matches to generic JTBD and gets the theses wrong. This file points it at the correct definitions and the canon, so its product reasoning is grounded in the methodology.
+- **What the installer writes into your project** — a **short pointer block**, five lines, between `<!-- Next-Move-Theory-Rules:start -->` … `<!-- Next-Move-Theory-Rules:end -->` markers in your `CLAUDE.md` (Claude Code) and `AGENTS.md` (Codex and most other agents). It names the canon as the source of truth, points at `/nmt-chat`, and links the full guide. Your rules file stays yours: the installer only ever replaces what sits *between* the markers, and updates refresh just that region. The full primer stays here in the repo — read it, or paste the parts you want into your own rules.
+- **Why the block is small** — every line in a rules file is read on every turn in every project. The canon is the deep source; the rules file just has to send the agent there instead of letting it pattern-match to generic JTBD.
 
 ---
 

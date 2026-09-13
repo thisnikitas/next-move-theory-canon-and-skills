@@ -13,10 +13,12 @@
   Skills\codex\ — the Claude copy is installed verbatim; the Codex copy is
   a separately-maintained, Codex-compatible variant. Existing unrelated skills in
   .claude\skills and .agents\skills are left untouched. Re-running is idempotent.
+  The one exception is our own renamed skill: an old nmt-upgrade\ folder is
+  removed and replaced by nmt-update\.
 
   Usage:
     # A) one-liner — clones to a temp dir and installs into the CURRENT directory:
-    irm https://nextmovetheory.com/install.ps1 | iex
+    irm https://raw.githubusercontent.com/zamesin/Next-Move-Theory-Canon-and-Skills/main/install.ps1 | iex
 
     # B) from a clone of this repo:
     powershell -ExecutionPolicy Bypass -File install.ps1                 # target = parent of the clone
@@ -37,8 +39,8 @@ $StartLocation = (Get-Location).ProviderPath
 
 # Resolve the source (this repo) and whether we must clone it. Running from a
 # clone of the repo → use it. Running via the web one-liner
-# (irm https://nextmovetheory.com/install.ps1 | iex — no file on disk) → clone to
-# a temp dir, exactly as install.sh does for the `curl … | bash` one-liner.
+# (irm https://raw.githubusercontent.com/.../install.ps1 | iex — no file on disk) →
+# clone to a temp dir, exactly as install.sh does for the `curl … | bash` one-liner.
 $scriptPath = $MyInvocation.MyCommand.Path
 $Cloned = $false
 if ($scriptPath -and (Test-Path -LiteralPath (Join-Path (Split-Path -Parent $scriptPath) 'Skills') -PathType Container)) {
@@ -107,21 +109,30 @@ function Copy-DirectoryContents {
     Copy-Item -Path (Join-Path $From '*') -Destination $To -Recurse -Force
 }
 
+# The rules block injected into CLAUDE.md / AGENTS.md. Deliberately tiny: it points
+# at the canon and the README instead of duplicating them in every project's rules
+# file. Keep it identical to the block in install.sh.
+$NmtRules = @'
+Next Move Theory (NMT) skills are installed in this project.
+
+- Methodology source of truth: ./Next-Move-Theory-Canon/ — for product/strategy work always prefer it over generic Jobs To Be Done knowledge (the definitions differ substantially).
+- New here? Start with /nmt-chat — it routes you to the right skill.
+- Skill outputs go to Skills-Results/ (path configurable per run).
+- Full guide + updates & telemetry policy: ./NextMoveTheory-README.md
+'@
+
 function Update-RulesFile {
     param(
         [Parameter(Mandatory = $true)][string]$Name,
-        [Parameter(Mandatory = $true)][string]$SourceRoot,
         [Parameter(Mandatory = $true)][string]$TargetRoot
     )
 
-    $sourceFile = Join-Path $SourceRoot $Name
-    if (-not (Test-Path -LiteralPath $sourceFile -PathType Leaf)) {
-        return
-    }
-
+    # Creates the file if absent. If the markers are already there, ONLY the text
+    # between them is replaced — everything outside the markers (your own rules, and
+    # the long block older versions of this installer wrote) is kept byte-for-byte.
     $start = '<!-- Next-Move-Theory-Rules:start -->'
     $end = '<!-- Next-Move-Theory-Rules:end -->'
-    $rules = (Read-Utf8Text -Path $sourceFile).TrimEnd()
+    $rules = $NmtRules.Replace("`r`n", "`n").TrimEnd()
     $block = "$start`n$rules`n$end`n"
     $targetFile = Join-Path $TargetRoot $Name
 
@@ -161,18 +172,50 @@ Copy-Item -LiteralPath (Join-Path $Source 'Next-Move-Theory-Canon') -Destination
 
 # 2. Skills — the Claude copy to .claude\skills, the Codex copy to .agents\skills.
 #    The Codex tree is already Codex-compatible (no install-time patching). Existing
-#    unrelated skills in those dirs are left untouched.
+#    unrelated skills in those dirs are left untouched. The one folder we do remove
+#    is our own renamed skill: nmt-upgrade became nmt-update.
 New-Item -ItemType Directory -Path $claudeSkills -Force | Out-Null
 New-Item -ItemType Directory -Path $codexSkills -Force | Out-Null
+foreach ($stale in @((Join-Path $claudeSkills 'nmt-upgrade'), (Join-Path $codexSkills 'nmt-upgrade'))) {
+    if (Test-Path -LiteralPath $stale -PathType Container) {
+        Remove-Item -LiteralPath $stale -Recurse -Force
+    }
+}
 Copy-DirectoryContents -From (Join-Path $Source 'Skills\claude') -To $claudeSkills
 Copy-DirectoryContents -From (Join-Path $Source 'Skills\codex')  -To $codexSkills
 
 # 3. README, renamed (so it doesn't clobber your project's own README).
 Copy-Item -LiteralPath (Join-Path $Source 'README.md') -Destination (Join-Path $Target 'NextMoveTheory-README.md') -Force
 
-# 4. Inject the rules between markers into existing CLAUDE.md and AGENTS.md.
-Update-RulesFile -Name 'CLAUDE.md' -SourceRoot $Source -TargetRoot $Target
-Update-RulesFile -Name 'AGENTS.md' -SourceRoot $Source -TargetRoot $Target
+# 3b. Record the installed version (top entry of the changelog) so the skills'
+#     end-of-run update check can compare it against the changelog in the public
+#     GitHub repo. Best-effort — never fail the install over this.
+$changelog = Join-Path $Source 'CHANGELOG.md'
+if (Test-Path -LiteralPath $changelog -PathType Leaf) {
+    try {
+        $verLine = Select-String -LiteralPath $changelog -Pattern '^##\s+[0-9]' | Select-Object -First 1
+        if ($verLine) {
+            $ver = ($verLine.Line -replace '^##\s+(\S+).*', '$1')
+            $nmtLines = @(
+                "# Next Move Theory — installed version. Please keep this file.",
+                "# It records which version of the canon + skills you have installed. At the end",
+                "# of a run, the skills read it to check whether a newer version is out and let",
+                "# you know (see `"Updates & telemetry`" in NextMoveTheory-README.md).",
+                "# Safe to keep, not safe to lose: delete it and update notices simply stop —",
+                "# nothing breaks, but you can silently fall behind on new canon + skills.",
+                "# It's only a few bytes. Refresh everything (including this file) with /nmt-update, or:",
+                "#   irm https://raw.githubusercontent.com/zamesin/Next-Move-Theory-Canon-and-Skills/main/install.ps1 | iex",
+                "# The line below is the installed version — don't edit it.",
+                "$ver"
+            )
+            Write-Utf8Text -Path (Join-Path $Target '.nmt-version') -Content (($nmtLines -join "`n") + "`n")
+        }
+    } catch { }
+}
+
+# 4. Inject the short rules block between the markers in CLAUDE.md and AGENTS.md.
+Update-RulesFile -Name 'CLAUDE.md' -TargetRoot $Target
+Update-RulesFile -Name 'AGENTS.md' -TargetRoot $Target
 
 Write-Host ''
 $onboard = @'
@@ -180,31 +223,26 @@ $onboard = @'
   Next Move Theory is installed.   Free and open-source.
 ============================================================================
 
-  >>  START HERE - run   /nmt-chat   (Claude Code)   or   $nmt-chat   (Codex)
+  >>  Start with   /nmt-chat   (Claude Code)   or   $nmt-chat   (Codex)
+      - it routes you to the right skill.
 
-      It's the front door to everything here. Paste whatever you have - a
-      rough idea, messy notes, a chat thread, a doc - and it pulls out the
-      context and tells you your next move and which skill to run for your
-      task. No methodologically-perfect brief required.
-
-      Don't know where to start? That is exactly what /nmt-chat is for.
+      Paste whatever you have - a rough idea, messy notes, a chat thread, a
+      doc - and it pulls out the context and tells you your next move. No
+      methodologically-perfect brief required.
 
   --------------------------------------------------------------------------
-  All the skills   (Claude Code: /name   |   Codex: $name):
+  Where each starting point leads   (Claude Code: /name   |   Codex: $name)
 
-    nmt-chat                    advice + your next move        <- START HERE
-    nmt-diagnose                live product: find risks & growth points
-    nmt-market-research         new idea: size the market, pick the segment
-    nmt-craft-value-proposition turn a segment into a winning value prop
-    nmt-product-requirements    turn the value into a build-ready PRD
-    nmt-craft-go-to-market      turn the value into landing + ads + growth
-    nmt-analyze-interviews      have interviews? extract the Jobs from them
+    new idea            ->  /nmt-chat  ->  /nmt-market-research
+                        ->  /nmt-craft-value-proposition
+                        ->  /nmt-product-requirements
+                        ->  /nmt-craft-go-to-market
+    live product        ->  /nmt-diagnose
+    interviews on disk  ->  /nmt-analyze-interviews
+    update everything   ->  /nmt-update
 
-  The four producers form a pipeline - jump in wherever you already are:
-    market-research -> craft-value-proposition -> product-requirements
-                                              -> craft-go-to-market
-
-  Still unsure which to run? Run /nmt-chat - it routes you to the right one.
+  Jump in wherever you already are - each skill takes what you hand it, or
+  routes you back to the step it needs first.
   --------------------------------------------------------------------------
 '@
 Write-Host $onboard
@@ -224,9 +262,16 @@ $tail = @'
   Verified against Codex CLI 0.141.0; if the key is unavailable in your Codex
   version, the skills fall back to asking in chat.
 
+  Updates & telemetry - skills check for a newer version at the END of a run.
+  The request sends ONLY the skill name and the installed version; no project
+  content and no personal data. Downloads always come from GitHub.
+  Disable: add   update-check: off   to .nmt-config in your project root.
+  Details: .\NextMoveTheory-README.md (section "Updates & telemetry").
+
   Update anytime - safe & idempotent (refreshes canon, skills, and rules in
-  place; leaves your own files untouched). Re-run the installer from your
-  project root.
+  place; leaves your own files untouched). Run /nmt-update, or re-run the
+  installer from your project root:
+      irm https://raw.githubusercontent.com/zamesin/Next-Move-Theory-Canon-and-Skills/main/install.ps1 | iex
 
   Free & open:   https://github.com/zamesin/Next-Move-Theory-Canon-and-Skills
   New releases:  subscribe at https://nextmovetheory.com

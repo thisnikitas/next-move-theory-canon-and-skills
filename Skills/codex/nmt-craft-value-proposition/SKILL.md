@@ -2,8 +2,9 @@
 name: nmt-craft-value-proposition
 description: >-
   Generate the strongest possible Value Proposition for a chosen segment using
-  Ivan Zamesin's AJTBD / Next Move Theory methodology. Input — a $nmt-market-
-  research result OR a manual segment+Jobs description. It extracts the segment's
+  Ivan Zamesin's AJTBD / Next Move Theory methodology (distinct from generic
+  Christensen JTBD). Input — a $nmt-market-research result OR a manual
+  segment+Jobs description. It extracts the segment's
   dominant success criteria, builds the Job Graph + Critical Chain of Jobs,
   generates value hypotheses via the value-creation mechanics catalog, filters on
   feasibility, cost, unit economics, and competitiveness, ranks by RICE, and
@@ -16,7 +17,7 @@ user-invocable: true
 
 # Craft Value Proposition v2
 
-> **New here, or not sure this is the right skill?** Start right here — or run `$nmt-chat`, describe your situation, and it points you to the right one. Quick map: **new idea →** `$nmt-market-research` · **live product or a metric moved →** `$nmt-diagnose` · **have customer interviews →** `$nmt-analyze-interviews` · **ready to build →** `$nmt-product-requirements` · **positioning / launch copy →** `$nmt-craft-value-proposition` → `$nmt-craft-go-to-market`.
+> **New here, or not sure this is the right skill?** Start right here — or run `$nmt-chat`, describe your situation, and it points you to the right one. Quick map: **new idea →** `nmt-market-research` · **live product or a metric moved →** `nmt-diagnose` · **have customer interviews →** `nmt-analyze-interviews` · **ready to build →** `nmt-product-requirements` · **positioning / launch copy →** `nmt-craft-value-proposition` → `nmt-craft-go-to-market`.
 
 This skill takes a customer group you want to win — described by you in plain words, or handed over from a `$nmt-market-research` run — and works out the **strongest, testable reason they'd switch to you** (the value proposition), plus a build-ready spec the next skill can turn into a PRD.
 
@@ -39,7 +40,7 @@ The output is a single file. **The default the reader sees is short** — a one-
 2. **Layer 2 — The reasoning (opt-in, plain English):** *how we got here* for each Layer-1 claim — what the customer wants most, why you'd win, the before→after, the moment it clicks for them (the Aha moment) in plain terms, the riskiest bet — each linking down to the full work.
 3. **Layer 3 — The full work (opt-in/collapsed):** the value-move tables, before→after, competitor matrix, test cards, the **PRD-ready implementation spec** `$nmt-product-requirements` consumes, and the methodology appendix.
 
-> **Producer contract (binding) — `../PRODUCER-CONTRACT.md`.** Six cross-cutting behaviors shared by all producer skills, from user feedback: (1) print a **helicopter-view** before the first question; (2) ask **Markdown or HTML** output; (3) treat **all** user input as hypothesis and emit a *"risks I see in what you gave me"* block; (4) print **validation debt** and write any go-ahead as **`GO (to validation)`**, never a bare "build it now"; (5) accept a **custom output path**; (6) Deep mode runs an **evidence floor + self-critic loop** and offers a **web-MCP fallback**. The hooks below wire each into this skill; the contract is the source of truth for the wording.
+> **Producer contract (binding) — `../PRODUCER-CONTRACT.md`.** Eleven cross-cutting behaviors shared by all producer skills, from user feedback: (1) print a **helicopter-view** before the first question; (2) ask **Markdown or HTML** output; (3) treat **all** user input as hypothesis and emit a *"risks I see in what you gave me"* block; (4) print **validation debt** and write any go-ahead as **`GO (to validation)`**, never a bare "build it now"; (5) accept a **custom output path**; (6) Deep mode runs an **evidence floor + self-critic loop** and offers a **web-MCP fallback**. Five more came from the anti-hallucination pass: (7) ask the **market + audience language** and build every example, channel, and price anchor from it; (8) **list the repo-context files found on disk and read them only after a yes**; (9) every claim carries its **status** — backed, derived, or the model's own hypothesis; (10) **frequency counts on every aggregated claim**, and a single source never carries a segment-level conclusion; (11) **confidence scaled to the input** — thin input gets ranges, a visible warning, and the top-3 inputs that would fix it. The hooks below wire each into this skill; the contract is the source of truth for the wording.
 
 ---
 
@@ -64,8 +65,10 @@ The output is a single file. **The default the reader sees is short** — a one-
 - **Anti-segment must be nameable** — if everyone wants this, the value prop is too universal.
 - **Unit economics is a filter** — value that does not convert to margin (LTV > CAC, Job budget covers cost-to-serve) is not a product (`nmt-key-theses.md §4`).
 - **Risks compound** — a value prop stacking ≥5 unvalidated assumptions gets flagged (`rat-key-theses.md §1`).
+- **Every claim carries its status** — backed by a quote or data, derived from the inputs, or the model's own hypothesis. An idea nobody in the inputs raised may never be written as customer demand (see "Claim statuses" below).
+- **A segment is Core Jobs + success criteria + the priority order over them** — never a purchase channel, never an industry, never a demographic on its own (`segmentation.md §2`, `§7`; the guard checklist is in S1).
 
-Per project `AGENTS.md`: every named external source in any output is a clickable Markdown link `[Name](https://...)` (Rule 2). Disclaimers (numerical + hallucination) at the top of `result.md` (Rule 3). Outputs are written for a **US product audience** (Rule 6) — default to US-context analogs.
+Per project `AGENTS.md`: every named external source in any output is a clickable Markdown link `[Name](https://...)` (Rule 2). Disclaimers (numerical + hallucination) at the top of `result.md` (Rule 3). **The market is the user's, not a default.** With no market named, write for a US product audience with US-context analogs (Rule 6) — but the moment the user names a market at intake (the market question in S0 is mandatory), every example, competitor, price anchor, channel, unit, and regulation comes from *that* market, in the language its audience speaks. Kazakhstan is not Russia; the UAE is not the US.
 
 ---
 
@@ -83,6 +86,22 @@ Per project `AGENTS.md`: every named external source in any output is a clickabl
 **Precision still holds in the methodology layer.** Job-grammar discipline (Jobs as *"I want to + verb,"* levels named, terms capitalized) governs the internal-reasoning held in context and the explicit **§12 Methodology appendix (NMT)** inside Layer 3, where full methodology language is expected. The *lead the reader sees* in Layers 1–2 (and in Layer-3 prose) is plain; the *parenthetical and the appendix* carry the precise terms.
 
 Link `references/glossary.md` once at the top of Layer 2, where the methodology terms first appear.
+
+---
+
+## Claim statuses, honest confidence, and where invented ideas go
+
+**Every claim in the document carries one of three statuses — and says which one it is.**
+
+- **Backed** — a quote, a number, or a document stands behind it. Cite it right there; for review or interview evidence, say how many said it and link them (*"7 of 22 reviews on G2 + Reddit: [links]"*).
+- **Derived** — you worked it out from the inputs. Say from what: *"derived from the two success criteria in your research file plus the pricing page below."*
+- **My hypothesis** — your own guess. Say so in plain words: *"this is my guess; nothing you gave me says it."*
+
+Three hard rules on top:
+
+- **A number a person said is that person's opinion, not a market fact.** *"60–70% of deals go through tenders"* ships as *"per the sales lead — his estimate, not a measured figure."* Same for *"our customers always…"* from a founder or a deck. Never promote a spoken number into a market number.
+- **Inventing value moves is this skill's job — dressing an invention as customer demand is not.** S3 exists to generate ways to create value that no customer ever named; that is the point. What you may never do is write such a move as if the customer asked for it. A hypothesis nothing in the inputs hints at gets **Confidence = low** in the RICE table, ships with a plain *"nobody asked for this — here's the cheapest way to find out"* line, and any that doesn't make the top 2 goes into the **"Ideas nobody asked for — hypotheses to validate"** list in Layer 3. Two real failures this skill produced: an invented product-lifetime warranty entered a value proposition as customer-stated demand, and a refill/consumable option for a single-use device ranked #2 — **an invention that contradicts the product's actual shape is dropped at S4, not ranked.**
+- **Confidence scales to what the user actually gave you (dynamic honesty).** No interviews, no analytics, no reviews — just a description — means the run is thin, and the document says so at the top of Layer 1: *"⚠️ Thin input: this ran on your description alone. The numbers are ranges, the segment is a hypothesis, not a finding."* On thin input use ranges (*"roughly $40–120 a month"*), never point numbers that imply measurement, and close Layer 2 with **the top 3 inputs that would raise accuracy most** (e.g. *"8 interviews with landlords who self-manage," "your last 50 support tickets," "G2 reviews of {competitor}"*). This is computed per run — the fixed disclaimers at the top do not cover it.
 
 ---
 
@@ -105,6 +124,7 @@ The value-proposition document is **three reading depths in one file**, linked t
 
 - **Unique, resolving anchors.** Every `▸` drill-down link points to its own unique `<a id="…">` that exists **exactly once**; no two links share a target. The live failure for this skill was two different Layer-1 links both pointing at `#l2-bet`, and `l3-value`+`l3-segment` stacked on one heading — give each its own anchor. Before shipping, list every `▸` target and confirm each resolves to one place.
 - **Inline-gloss opaque Layer-3 table headers.** A non-obvious column header carries a 3–6-word plain gloss right there. Don't rely on the glossary file — a casual reader never opens it.
+- **Zero-knowledge readability, and tooltips in HTML.** Every line of the document has to make sense to someone who has never heard of this methodology — explain it the way you'd explain it to a smart 8-year-old, in everyday words. No abbreviation ships unexplained, including ones you coin yourself. **In an HTML run, wrap every abbreviation and methodology term on first use in `<abbr title="plain explanation">`** — RICE, RAT, MVP, CAC, LTV, Core Job, Big Job, Aha moment, Consideration Activators, Critical Chain of Jobs — and write the tooltip itself in the same everyday words, never in more jargon.
 
 ---
 
@@ -192,7 +212,7 @@ The skill writes **exactly one** file. Default location (used unless the user ga
 Skills-Results/{product-slug}/craft-value-proposition/{YYYY-MM-DD_HH-MM}_{product-slug}-craft-value-proposition-result.{md|html}
 ```
 
-- **Extension follows the chosen output format** (`PRODUCER-CONTRACT.md §2`): `.md` (default) or a single self-contained `.html` (inline CSS, working in-page anchors for the How-to-read jumps + every `▸` drill-down link, source links opening in a new tab). **Either format leads with the one-page value proposition (Layer 1) and keeps Layer 2 + Layer 3 collapsed in `<details>` blocks** — collapsed `<details>` renders on the GitHub Markdown mirror too, so the default view is short in both. HTML also uses `<details>` for methodology traces. HTML carries the identical content — same attribution, disclaimers, three layers, tables, links — just in a more readable shell. Never write both; one file per run.
+- **Extension follows the chosen output format** (`PRODUCER-CONTRACT.md §2`): `.md` (default) or a single self-contained `.html` (inline CSS, working in-page anchors for the How-to-read jumps + every `▸` drill-down link, source links opening in a new tab). **Either format leads with the one-page value proposition (Layer 1) and keeps Layer 2 + Layer 3 collapsed in `<details>` blocks** — collapsed `<details>` renders on the GitHub Markdown mirror too, so the default view is short in both. HTML also uses `<details>` for methodology traces and `<abbr title="plain explanation">` tooltips on the first use of every abbreviation and methodology term. HTML carries the identical content — same attribution, disclaimers, three layers, tables, links — just in a more readable shell. Never write both; one file per run.
 - If the user gave a custom path, write the one file there with the same filename pattern.
 - Everything else — the normalized input, the ranked criteria, the Job Graph, the raw hypotheses, the scored shortlist, the RAT inventory, dropped hypotheses, and every GATE verdict — **stays in-context across the stages**; none of it is written to a separate file. The timestamp makes each run's file unique, so reruns never overwrite. Disclaimers (Rule 3) go at the top of this one file.
 
@@ -219,6 +239,13 @@ One Codex agent, no internet, no subagents. Runs the full S0→S6 chain inline; 
 
 Then proceed to intake.
 
+### If you can't ask questions — announce the defaults and go
+Codex often runs where interactive input isn't available. **Never stall waiting for an answer.** If `request_user_input` doesn't work or the run is non-interactive, choose defaults, state them in one line at the top of your answer, and proceed:
+
+> Running with defaults: Quick mode · intake depth: just the essentials · market: {the market your text points at — otherwise US, and I say so} · output: Markdown · saved to `Skills-Results/{product}/craft-value-proposition/…`. Rerun with parameters in the prompt to change any of it — e.g. `$nmt-craft-value-proposition deep, market Kazakhstan, output HTML`.
+
+Every guess you had to make — especially **the market**, since it drives competitors, price anchors and examples — goes in the header and in the "What you told me — and the risks I see in it" block, so a wrong assumption is visible immediately instead of silently shaping the result.
+
 ### Intake depth — ask this first
 The very first thing in the intake, before anything else. This is about the **number of questions** I ask you — it's independent of the Quick / Deep research mode (that's about internet + subagents, asked later). Ask via `request_user_input` (or plain chat):
 
@@ -226,10 +253,15 @@ The very first thing in the intake, before anything else. This is about the **nu
 > - **Just the essentials** — I ask the 3–4 questions that matter most, then deliver. Best for a fast first pass or when you're still exploring.
 > - **The full interview** — I walk you through everything so we cover the most blind spots and you get the highest-confidence result. Best when the decision is expensive.
 
-Hold the choice in context. **Just the essentials** → ask only the load-bearing questions (input path · segment + the 1–3 main things they're getting done + business goal); infer or defer the rest (materials, claims ledger, hand-off debt), and note in `result.md` what was skipped. **The full interview** → run the complete intake below (materials, claims ledger, hand-off debt, direction confirmation). Either way the engine still builds the full eight-element Job structure internally.
+Hold the choice in context. **Just the essentials** → ask only the load-bearing questions (market + audience language — never skipped at any depth · input path · segment + the 1–3 main things they're getting done + business goal); infer or defer the rest (materials, claims ledger, hand-off debt), and note in `result.md` what was skipped. **The full interview** → run the complete intake below (materials, claims ledger, hand-off debt, direction confirmation). Either way the engine still builds the full eight-element Job structure internally.
 
 ### Language
 Default **English**. If the user writes in another language, offer to work in it via `request_user_input` (English (Recommended) / their language; for another language, ask directly in chat). Hold the choice in context. The report uses the chosen language; canon files and source URLs stay as-is.
+
+### Market & audience — mandatory, asked every run
+Ask once, in the same breath as the language question: *"Which market or region are you selling into, and what language do the people you're selling to speak?"* Never infer it from the product's name, the user's language, or the fact that most examples you know are American.
+
+Everything downstream comes from the market they name — the competitors you compare against, the price anchors, the willingness-to-pay read, the alternatives the customer really uses today, the regulations, the units and currency, and the examples in the write-up. **Kazakhstan is not Russia; the UAE is not the US; Brazil is not Portugal.** If they name a market you know only thinly, say so plainly and list what you'd want checked locally (real local competitors, local price levels, local channels). Only with no market named do you fall back to a US audience with US-context analogs.
 
 ### Determine input path
 Lead with the standalone path — it is a first-class door, not a fallback. Open with: *"Tell me your customer group and what they're trying to get done — or point me at a `$nmt-market-research` result if you have one. Both work."* Then ask via `request_user_input`:
@@ -287,6 +319,7 @@ Ask as a Codex intake sequence. Use `request_user_input` for structured choices,
 ### User materials, claims ledger, direction confirmation (all paths)
 
 - **Materials.** Ask once: *"Any files or folders with material I should use — a Notion export (markdown), past research, interview notes, a strategy doc, your current site, a deck, a codebase?"* Read what's given; tag everything taken from it **[user data]** in-context. "Nothing" is a fine answer.
+- **Files already sitting in the working folder — list them and ask before opening any.** Glance at the working directory for things that look like product context: a README or product docs, survey exports, review dumps, analytics CSVs, interview notes, existing landing copy, a pricing page. If any exist, name them and ask permission before reading a single one: *"I see these files that might help: {list}. May I read them? This context is processed only by your agent locally — it is not sent anywhere."* Read only the ones the user says yes to. Never open files on your own initiative.
 - **Input-as-hypothesis gate (`PRODUCER-CONTRACT.md §3`).** Treat *all* input — the nmt-market-research result, the user's free-text claims, every uploaded deck / landing / codebase / past research — as **hypothesis, never established fact**. A landing page is the team's belief about value, not proof customers want it; the Job stated in a deck may be the team's projection, not the customer's real Job (the most expensive error). Don't just record the input — **actively hunt the risks inside it**: for each load-bearing input ask — is this customer-validated or the team's belief? Does the stated Job / segment look like the real one? Any internal contradictions, or guesses dressed as data? What must be true for it to hold, and is that checked? Hold the findings in context — they become the **"What you told me — and the risks I see in it"** block in Layer 2, with the single worst one surfaced in Layer 1. Never silently bake an unvalidated input into the wedge or the value prop.
 - **User-claims ledger.** Collect the strong factual claims the user made (segment beliefs, competitor facts, "customers always…"), tag each as **data / observation / hunch** (ask in one batched question if unclear; hunch is the default for anything from a deck / landing / idea stream). User claims enter the pipeline as *hypotheses, never facts*: GATE-4's competitiveness check treats an unverified user claim as unsupported evidence, and a primary value prop resting mainly on a user hunch gets flagged in `result.md` with a RAT card pointed at that claim.
 - **Hard gate.** No value prop or wedge may rest *primarily* on an unvalidated user input without the document saying so explicitly and pointing a RAT card at it. If the wedge is built on a Job taken from the user's materials and not confirmed by customer evidence, name that as the single most expensive risk.
@@ -306,14 +339,22 @@ Procedure:
 4. **Map to lead mechanics** using `value-creation.md §11` (e.g. *done-for-me-first* → *Take the Job off the customer*; *no-stress-first* → *Remove negative emotions*). This shortlist seeds — does not cap — S3.
 5. **Anchors:** capture the Big-Job ladder (each dominant criterion must ladder up to a Big-Job criterion), the alternatives list, and the segment's triggers.
 
-**Output (held in context):** ranked dominant criteria (direction + level) · priority-order label · per-criterion cost dimension · lead-mechanic shortlist · Big-Job ladder · alternatives.
+**Segment-cut guard — run this before you accept the segment, and again before any sub-segment split.** The skill inherits a segment from upstream or from the user; it still has to check the cut, and it must never emit a new or refined segment that fails these three (this mirrors the canon — `segmentation.md §2`, `§7`):
+
+- ▢ **How they buy is not a segment.** *"Buys through tenders," "comes via the marketplace," "enterprise sales"* puts people with completely different Core Jobs in one bucket — a reseller and an end customer sit inside the same tender and want different things. Cut by what they're getting done, not by how the money arrives.
+- ▢ **Industry or vertical is not a segment when the Core Jobs and success criteria coincide.** Don't split a B2B segment into *clinics / logistics / manufacturing* unless the criteria and their priority order genuinely differ. Same jobs + same criteria = one segment that happens to span several industries.
+- ▢ **Every segment is defined by Core Jobs + success criteria + the priority order over them.** If the cut you were handed is demographic, channel-based, or industry-based, either show the causal link to a different priority order over criteria, or merge it back and say you merged it.
+
+**Output (held in context):** ranked dominant criteria (direction + level) · priority-order label · per-criterion cost dimension · lead-mechanic shortlist · Big-Job ladder · alternatives · the segment-cut guard verdict.
 
 **GATE-1 acceptance criteria** (yes/no, evidence-cited):
 - ▢ Criteria are concrete (direction + level), not adjectives.
 - ▢ The *dominant* set (1–3) is identified with a causal rationale, not merely listed.
 - ▢ Each dominant criterion ladders up to a named Big-Job criterion.
 - ▢ Lead mechanics are drawn from the §11 map for this priority order.
-- **Hard checks:** every Core Job is a single `I want to + infinitive`; every external number carries a clickable link.
+- ▢ The segment-cut guard passed — the segment is not defined by purchase channel, by industry alone, or by demographics; any such cut was justified causally or merged.
+- ▢ Criteria and alternatives come from the market the user named, not from a US default.
+- **Hard checks:** every Core Job is a single `I want to + infinitive`; every external number carries a clickable link; every criterion carries its status (backed / derived / hypothesis) and any respondent-spoken number is labelled as that person's estimate.
 
 ## S2 — Job-Graph substrate (Micro + Critical Chain of Jobs)  → GATE-2
 
@@ -357,6 +398,7 @@ breaks · cycles · role hand-offs · time-gaps · Tax Jobs.
 - **Lead with the two dominant mechanics** — *move up a level* and *kill a Job* (`value-creation.md §14`) — and hold the invisible-product North Star (§20): *what would it look like for the customer to reach the outcome with no product to interact with at all?*
 - **Push for "fastest / cheapest"** — for each strong hypothesis, name the cheapest delivery that still produces the Aha Moment (concierge, no-code, partial-value slice).
 - **Generate broadly** — target **12–20 raw hypotheses**; drop non-applicable mechanics (note them in-context).
+- **Tag every hypothesis with where it came from** — a customer or review said it (quote + how many said it), it follows from the inputs, or you invented it. Invented moves are the point of this stage; unlabeled invented moves are the failure. **Kill on the spot anything that contradicts the product's real shape** — a refill or consumable for a single-use device, a warranty on something with no unit to warrant, an in-person branch for a two-person remote team. Such ideas are not "ambitious", they are wrong, and they must never reach the ranking.
 
 Each hypothesis is written in the canonical form:
 
@@ -377,7 +419,8 @@ Aha Moment: {the specific positive-prediction-error event}.
 - ▢ It operates at Core-Job level or above (not Micro-polish — unless Micro-polish *is* the wedge for this segment).
 - ▢ Habit is reused or sidestepped, never fought head-on.
 - ▢ It is communicable through a Big-Job criterion.
-- **Hard check:** no hypothesis is a bare feature; each names a mechanic and a specific displaced alternative.
+- ▢ Each hypothesis is tagged **said by customers / derived / invented**, and no invented one is written as customer demand.
+- **Hard check:** no hypothesis is a bare feature; each names a mechanic and a specific displaced alternative; nothing survives that contradicts the product's actual shape.
 
 ## S4 — Feasibility · Cost · Competitiveness filter + RICE  → GATE-4
 
@@ -385,13 +428,13 @@ Aha Moment: {the specific positive-prediction-error event}.
 
 1. **Build feasibility & cost-to-implement.** What does it actually take to build? Name the cheapest viable path (concierge / no-code / vibe-coding / partner) and the cheapest *probe* that proves value before the build. Flag any hypothesis whose realizability is genuinely uncertain (fusion-class impossible vs merely hard).
 2. **Unit-economics fit** (`nmt-key-theses.md §4` as the filter). Does the value convert to margin? Compare cost-to-serve against the segment's **Job budget** and willingness-to-pay; sanity-check the LTV > CAC *direction*. A delightful hypothesis the segment can't profitably be served on is dropped (or flagged as a different-segment move).
-3. **Competitiveness** — does it actually beat the competitive set **on the dominant criteria**? Build / extend the **criteria × competitor matrix** across direct (Core-Job), indirect (Big-Job), and turnkey (Big-Job-level) competitors. The wedge is an *underserved criteria intersection*, not a single criterion. In Quick mode this is reasoning-grade; in Deep mode it is web-grounded on real reviews.
+3. **Competitiveness** — does it actually beat the competitive set **on the dominant criteria**? Build / extend the **criteria × competitor matrix** across direct (Core-Job), indirect (Big-Job), and turnkey (Big-Job-level) competitors — **the competitors this segment actually uses in the market the user named**, not the US household names. The wedge is an *underserved criteria intersection*, not a single criterion. In Quick mode this is reasoning-grade; in Deep mode it is web-grounded on real reviews — and there **every "covers this poorly" claim carries a count and its sources** (*"9 of 31 reviews, [links]"*). A weakness named by exactly one review is a **single signal**: it goes in the "Single signals — verify before acting" list and may not carry the wedge. One vivid quote is never the segment's main pain.
 
 Then **RICE-rank** the survivors:
 
 - **R (Reach)** — % of the target segment for whom it applies.
 - **I (Impact)** — subjective value to one customer.
-- **C (Confidence)** — grounded in the nmt-market-research / canon evidence.
+- **C (Confidence)** — grounded in the nmt-market-research / canon evidence. **A hypothesis nothing in the inputs hints at scores low here by construction** — invention is allowed to win on Impact, never on Confidence.
 - **E (Effort)** — cost to build a probe / MVP (lower = better).
 - **+1 strategic bonus** if the mechanic is *move up a level* or *kill a Job* (`value-creation.md §14` — the strongest mechanics).
 - **+1 defensibility bonus** if it exits direct competition (Previous/Next Job, graph-shift, exclusive value).
@@ -401,7 +444,8 @@ Then **RICE-rank** the survivors:
 **Output (held in context):** the criteria×competitor matrix · per-hypothesis feasibility + cost-to-build + cheapest-probe + unit-econ read · RICE table with bonuses · the top 2 with one-line rationale.
 
 **GATE-4 acceptance criteria:**
-- ▢ Competitiveness is grounded in actual competitor evidence (Quick: named competitors + their "covers poorly" criteria; Deep: cited reviews) — not bare assertion.
+- ▢ Competitiveness is grounded in actual competitor evidence (Quick: named competitors + their "covers poorly" criteria; Deep: cited reviews **with counts and links**) — not bare assertion; single-source claims are quarantined, not used as the wedge.
+- ▢ Nothing in the top 2 contradicts the product's real shape, and any invented (nobody-asked-for-it) hypothesis in the top 2 is labelled as such with its cheapest test.
 - ▢ Cost-to-implement estimated and the cheapest probe named for the top 2.
 - ▢ Unit-econ direction is sane (Job budget covers cost-to-serve; LTV > CAC direction stated).
 - ▢ Ranking math is shown; the winner beats alternatives on a *dominant* criterion, not a peripheral one.
@@ -478,6 +522,8 @@ Three levels — go as deep as you need:
 
 > ⚠️ These are hypotheses, not facts — [full disclaimer ▸](#disclaimers)
 
+> ⚠️ **Thin input** *(include this line only when it's true — no interviews, no analytics, no reviews, just a description):* this ran on {what the user actually gave}. Numbers below are ranges, not measurements, and the segment is a hypothesis. [the three things that would sharpen it ▸](#l2-inputs-needed)
+
 > **Validation debt:** this value prop stands on **{N}** unvalidated assumptions — **{M}** of them fatal (would sink it if wrong). The fatal ones are the first things to test, before you build. [see them ▸](#l3-bet)
 > <sub>N = risky assumptions across the RAT inventory; M = those that kill it if wrong. A Quick run on thin input has high debt — say so honestly (`PRODUCER-CONTRACT.md §4`).</sub>
 
@@ -536,6 +582,10 @@ Plain English, one gloss per methodology term, `references/glossary.md` linked o
 <a id="l2-bet"></a>
 ## The riskiest bet — and the cheapest way to find out
 {The single assumption most likely to kill this, in one plain sentence, + the cheapest test that confirms or kills it, + what result means go vs. stop. Note the other bets live in the full list.} [the full RAT cards ▸](#l3-bet)
+
+<a id="l2-inputs-needed"></a>
+## What I worked from — and the three things that would sharpen this most
+{One plain sentence on what you actually had: the upstream research file, N interviews, M reviews, or just a description. Then the three inputs that would raise accuracy most, each with why — e.g. "8 interviews with landlords who self-manage (would confirm or kill the dominant criterion)", "your last 50 support tickets (real Problems, in their words)", "reviews of {the top local alternative} (what it covers poorly)". On a thin run this is the most useful block on the page — say so.}
 ```
 
 ### Layer 3 — The Full Work
@@ -587,6 +637,7 @@ The current §0–§12 substance, kept whole, sitting below the plain layers. Ad
 |---|---|---|---|---|
 | {criterion} | ⚠️ | ❌ | ⚠️ | ✅ |
 **Why we win:** {the underserved criteria intersection only we cover}.
+{Deep runs: each ⚠️/❌ cell says how many sources back it and links them — *"weak on turnaround: 9 of 31 reviews, [links]"*. A cell backed by one source is marked *single signal* and cannot be what we win on.}
 
 ## 7. Proof & the Aha Moment
 **Aha Moment:** {the specific moment value first beats the customer's expectation — where it fires on the Critical Chain of Jobs, how far left it is shifted}. NOT signup/login.
@@ -610,6 +661,15 @@ The current §0–§12 substance, kept whole, sitting below the plain layers. Ad
 {The three compact RAT cards from S5, in the S5 5-line format.}
 
 > <sub>**▸ methodology trace.** Risks walked across the chain (Market / Segment+Jobs / Value / Unit-economics / Channels) + product-specific custom risks; ranked by (P(wrong) × cost-if-wrong) ÷ cost-to-validate (`rat-key-theses.md`); risks compound (`rat-key-theses.md §1`).</sub>
+
+## 10a. Ideas nobody asked for — hypotheses to validate
+*Everything here I invented. No customer, review, or document you gave me raised it. That doesn't make it wrong — it makes it unproven, and it is why none of it is written above as something your customers want.*
+
+| The idea | Why I think it could work | Cheapest way to find out | What would kill it |
+|---|---|---|---|
+| {invented value move} | {the reasoning — labelled as reasoning} | {test, ~cost, ~days} | {the falsifying signal} |
+
+**Single signals — verify before acting.** {Anything exactly one source said: one review, one interview, one line in the user's deck. Quote it, name the source, and say plainly that one voice is not a pattern. These never carry the wedge or the primary value proposition.}
 
 <a id="l3-spec"></a>
 ## 11. Implementation spec  → $nmt-product-requirements
@@ -642,6 +702,12 @@ The current §0–§12 substance, kept whole, sitting below the plain layers. Ad
 - [ ] **Opaque Layer-3 table headers carry an inline plain gloss.**
 - [ ] **Disclaimers once** — full two-part disclaimer at top only; Layer 1 has the one-line pointer; this block does not repeat it.
 - [ ] **Citations fenced** — no canon path or `Rule N` inline in Layers 1–2 or in Layer-3 prose; any canon reference sits in a `▸ methodology trace` line; the §12 consolidated list is the only place a flat reference list is allowed; no `AGENTS.md Rule N` anywhere.
+- [ ] **Every claim carries its status** — backed (cited; review/interview evidence carries counts + links), derived (says from what), or my hypothesis (says so). No number a person spoke is presented as a market fact.
+- [ ] **Nothing invented is written as customer demand** — invented moves sit in §10a or carry the "nobody asked for this" line; nothing survives that contradicts the product's real shape; single-source signals are quarantined, not used as the wedge.
+- [ ] **Confidence matches the input** — a thin run says so at the top of Layer 1, uses ranges instead of point numbers, and names the top-3 inputs that would sharpen it.
+- [ ] **The user's market drives the content** — competitors, price anchors, alternatives, channels, examples, units and currency come from the market they named; no US default slipped in unasked.
+- [ ] **The segment is Jobs-based** — not purchase channel, not industry alone, not demographics.
+- [ ] **Readable with zero methodology knowledge**; in an HTML run every abbreviation and term carries an `<abbr title="…">` tooltip on first use, written in everyday words.
 - [ ] One-liner = [what it is] + [Core Jobs] + [value by criteria]
 - [ ] Dominant success criteria identified and the value prop beats competitors on them
 - [ ] Primary names a product + a mechanic combination + a Core Job + a displaced alternative (not a slogan)
@@ -671,7 +737,10 @@ The current §0–§12 substance, kept whole, sitting below the plain layers. Ad
 - ▢ **Drill-down links resolve** — every Layer-1 claim links to a real Layer-2 anchor; every Layer-2 claim links to a real Layer-3 anchor; every `#l...`/`#disclaimers` target exists.
 - ▢ **Disclaimers once** — full two-part disclaimer at top only; Layer 1 carries the one-line pointer; not repeated lower down.
 - ▢ **Citations fenced** — no canon path or `Rule N` inline in Layers 1–2 or in Layer-3 prose; any canon reference sits in a `▸ methodology trace` line; the §12 consolidated list is the only flat reference list; no `AGENTS.md Rule N` in any layer.
-- ▢ US-native phrasing; passes the "so what?" test (every claimed attribute → benefit → why-they-care) and the 5-second test on Layer 1.
+- ▢ **Claim statuses hold** — every claim is backed (cited, with counts on review/interview evidence), derived (from what), or flagged as the model's hypothesis; no respondent's number became a market fact; nothing invented is written as customer demand; single signals are quarantined.
+- ▢ **Confidence matches the input** — thin runs flagged at the top of Layer 1, ranges not point numbers, top-3 sharpening inputs named.
+- ▢ **The named market drives every example, competitor, price anchor and channel**; the segment cut is Jobs-based, not channel / industry / demographics.
+- ▢ Phrasing fits the audience's market and language; passes the "so what?" test (every claimed attribute → benefit → why-they-care) and the 5-second test on Layer 1; readable with zero methodology knowledge (HTML: `<abbr>` tooltips on first use).
 - ▢ §11 implementation spec is genuinely PRD-ready (maps to `$nmt-product-requirements` inputs).
 - ▢ Every external source is a clickable link (Rule 2); US-context analogs (Rule 6).
 - **Human gate:** the user approves & ships.
@@ -690,6 +759,7 @@ Same S0→S6 chain, but substantive stages are parallelized and web-grounded. Ag
 - **Evidence floor, not just a ceiling.** The web-touching legs ([R] reviews-mining, [F] feasibility/competitiveness, [RAT]) have fetch *caps*; treat the lower bound as a *floor* too. A leg may not return "done" until it has hit a real minimum of distinct sources for its task — reviews/competitors → ≥4 competitors with real review sources; feasibility → the competitor matrix grounded on cited reviews, not assertion — **or** explicitly reported why fewer were possible (blocked / none exist). "Did two queries and stopped" is a failure state, not a completion.
 - **Self-critic loop per leg.** After each research leg returns, run a short critic pass (this is what the [C] critic gates already do per GATE): *enough distinct sources? load-bearing claims actually verified against a source? any methodology error (segment by demographics, Big-Job-as-segment, features-before-criteria, unit-econ ignored)? gaps left?* If it fails, re-run the leg with the gap named — up to 2 extra rounds, then escalate to the user. Don't ship a leg that failed its own critic.
 - **Web-MCP fallback.** When the built-in fetch is blocked or thin on a needed source (G2, Capterra, local-market sites), tell the user once and use a web-research MCP if one is connected — [Firecrawl](https://www.firecrawl.dev/) or [Exa](https://exa.ai/) (both ship MCP servers; discover via tool search). Without it, proceed and flag thin coverage in the verification checklist.
+- **Checkpoint as you go — a long run must not lose its work.** A Deep run can hit a context or session limit mid-way. As each wave returns, append its result to the **single output file** as a checkpoint block (`<!-- checkpoint: wave N — work in progress -->` … ), so an interruption costs at most one wave. Keep the canon loading staged as specified above — each agent reads only its slice, never the whole canon. The final synthesis replaces the checkpoints with the finished three layers. Still one file (Rule 4) — never a second scratch file.
 
 **Waves:**
 
@@ -705,7 +775,7 @@ Wave 5 (sequential):            [SYN] synthesis → [GATE-6 panel] → (human: s
 
 **Agent prompts (objective · input · output · boundaries · effort budget — every agent returns its result in-message):**
 
-- **[R] reviews-mining.** Given the segment + alternatives, fetch reviews from G2 / Reddit / Product Hunt / Trustpilot / Capterra. Return **raw signals only** (do NOT synthesize hypotheses): the specific Problems-with-current, which dominant criteria each competitor covers poorly, and 5–10 quotable quotes per competitor **with source URLs**. ≤12 fetches / ~10 min. **Evidence floor:** cover ≥4 competitors with real review sources, or report why fewer were possible (blocked / none exist) — two queries and stop is a failure. If a source blocks the built-in fetch (G2, Capterra), flag it and use a web-research MCP (Firecrawl / Exa) if connected.
+- **[R] reviews-mining.** Given the segment + alternatives, fetch reviews from G2 / Reddit / Product Hunt / Trustpilot / Capterra — **and from the review sites and forums people in the user's named market actually use.** Return **raw signals only** (do NOT synthesize hypotheses): the specific Problems-with-current, which dominant criteria each competitor covers poorly, and 5–10 quotable quotes per competitor **with source URLs**. **Count everything:** each Problem or weak criterion reports how many distinct reviews said it and links them (*"11 of 34 reviews across G2 + Reddit: [links]"*). Anything exactly **one** source said goes in a separate **"Single signals — verify before acting"** list and may never be reported as the segment's main pain — one vivid quote is not a pattern. ≤12 fetches / ~10 min. **Evidence floor:** cover ≥4 competitors with real review sources, or report why fewer were possible (blocked / none exist) — two queries and stop is a failure. If a source blocks the built-in fetch (G2, Capterra), flag it and use a web-research MCP (Firecrawl / Exa) if connected.
 - **[S1] dominant-criteria.** Read the eager core + `segmentation.md` + `job-structure.md`. Given the normalized input, return the ranked dominant criteria + lead mechanics + Big-Job ladder per S1. No web.
 - **[S2] job-graph.** Read `critical-chain.md` (+ `job-graph.md` only if the substrate needs care). Given the input + the S1 result, return the Job Graph + Critical Chain of Jobs per S2. No web.
 - **[G1..Gk] mechanic-family generators (sectioning).** Read the eager core + `behaviour-change.md`. Each agent owns one mechanic family (e.g. *subtract/kill/move-up*; *take-off/done-for-you/chain-repair*; *emotion/expectation/need*; *price/cost/cognitive*; *Previous/Next/link-to-Big-Job*). Given the Job Graph + dominant criteria + the reviews signal, return the strongest / fastest / cheapest hypotheses in their family in canonical form; the orchestrator merges them. Effort: 3–6 hypotheses per family.
@@ -733,6 +803,12 @@ Produce a `⚠️ Methodology violation` warning (not silent output) for any of:
 | No feasibility / cost check | A surfaced prop with no cost-to-build or unit-econ read | "A value prop without a feasibility + unit-econ read isn't validatable. Add cost-to-build and the Job-budget vs cost-to-serve check." |
 | Competitiveness asserted, not grounded | "we're better" with no criteria×competitor matrix | "Ground competitiveness on the dominant criteria vs named competitors (Deep: cited reviews)." |
 | Stacks 5+ assumptions | ≥5 stacked unvalidated assumptions | "Risks compound. 5 assumptions at 60% failure each ≈ 1% survival. Strip one." |
+| Invented idea written as customer demand | A value move no input mentions, phrased as something customers want | "Nobody in your inputs asked for this. It stays a labelled hypothesis with a cheap test — §10a — not a claim." |
+| Invention contradicts the product's shape | A refill for a single-use device, a warranty with no unit to warrant, a branch for a two-person team | "This can't exist for this product. Drop it before ranking, don't score it." |
+| A person's number used as market fact | *"60–70% of deals go through tenders"* with no owner attached | "That's one person's estimate. Write 'per {role} — his estimate, not a measured figure'." |
+| One quote treated as the segment's pain | A claim backed by exactly one review / interview / deck line | "One voice is not a pattern. Move it to 'Single signals — verify before acting'." |
+| Segment cut by channel or industry | Segment defined by how they buy, or by vertical alone | "That's not a segment. Define it by Core Jobs + success criteria + priority order, or merge it back." |
+| US default over the user's market | Competitors, prices, channels or examples from the US when the user named another market | "Use their market. Local alternatives, local price anchors, local channels — Kazakhstan is not Russia." |
 | PPE / NPE abbreviations | Pattern match | "Write *Aha Moment* / *Problem* (Rule 22), never PPE / NPE." |
 
 ---
@@ -766,9 +842,20 @@ Produce a `⚠️ Methodology violation` warning (not silent output) for any of:
 - [ ] If path C: reduced-confidence flag at top of `result.md`.
 - [ ] **Step ledger:** every stage S0–S6 checked off by name; a skipped stage or gate was declared to the user, never silent.
 - [ ] **User claims stayed hypotheses:** ledger claims tagged (data / observation / hunch); the primary value prop does not rest primarily on a single unverified user hunch without saying so.
+- [ ] **Claim statuses present** — every claim backed (cited; counts + links on review/interview evidence) / derived (from what) / my hypothesis (said so); no respondent-spoken number shipped as market fact; single signals quarantined.
+- [ ] **Inventions labelled and contained** — §10a "Ideas nobody asked for" written; nothing invented reads as customer demand; nothing survives that contradicts the product's real shape.
+- [ ] **Confidence scaled to the input** — thin run flagged at the top of Layer 1, ranges instead of point numbers, top-3 sharpening inputs named in Layer 2.
+- [ ] **Market asked and honoured** — the market/geography + audience language question was asked; every competitor, price anchor, channel and example comes from that market.
+- [ ] **Working-folder files were listed and read only with permission**, with the "processed only by your agent locally" note given.
+- [ ] **Segment cut is Jobs-based** (not channel / industry / demographics); any refinement passed the S1 segment-cut guard.
+- [ ] **Zero-methodology readability** — a reader who has never heard the terms can follow every line; HTML run carries `<abbr title="…">` tooltips on first use.
+- [ ] Deep run: each wave checkpointed into the single output file so an interruption loses at most one wave.
 - [ ] **Producer contract satisfied** (`../PRODUCER-CONTRACT.md`): helicopter-view printed before intake; output-format + output-path asked; if HTML, one self-contained `.html` with resolving anchors + `<details>`; the **"What you told me — and the risks I see in it"** block present (unless no input given); **validation-debt line** in Layer 1; the next step framed as **validate first, not build** (no bare "build it now"); on hand-off from nmt-market-research, asked what validation debt has been retired and re-tagged anything still unvalidated; Deep mode hit its evidence floor + self-critic loop (or flagged thin coverage + offered the web MCP).
 
 ---
 
-> **Update check — do this at the very end (best-effort, ≤2s, never blocks).** After you've finished this skill's work and delivered the result — for a multi-turn chat (e.g. nmt-chat / nmt-diagnose), after your first substantive answer — read the installed version from `.nmt-version` (project root) and run
-> `v="$(cat .nmt-version 2>/dev/null)"; curl -fsSL --max-time 2 "https://nextmovetheory.com/version?skill=nmt-craft-value-proposition${v:+&v=$v}"` — on any error or timeout, skip silently. Compare that installed version with the feed's `latest`; if behind, add one line — the `<installed> → <latest>` gap, a one-line summary per newer entry, and "run $nmt-upgrade to update". If versions match or `.nmt-version` is absent, add nothing.
+> **Update check — after the result is delivered (optional; policy in NextMoveTheory-README.md, section "Updates & telemetry").**
+> Skip this entirely if `.nmt-config` (project root) contains a line `update-check: off`, or the environment variable `DO_NOT_TRACK` or `NMT_NO_UPDATE_CHECK` is set.
+> Otherwise, the first time this runs in the conversation, tell the user in one line: "Checking for NMT skill updates — only this skill's name and the installed version are sent (details: NextMoveTheory-README.md; disable: add `update-check: off` to `.nmt-config`)."
+> Then run `v="$(grep -m1 -E '^[0-9]' .nmt-version 2>/dev/null)"; curl -fsSL --max-time 2 "https://nextmovetheory.com/version?skill=nmt-craft-value-proposition${v:+&v=$v}"` — on any error or timeout, skip and move on; never retry, never block.
+> If the feed's `latest` is newer than the installed version, add one line: the `<installed> → <latest>` gap, a one-line summary per newer entry, and "run $nmt-update to update (the update itself downloads from GitHub)". If versions match or `.nmt-version` is absent, add nothing.

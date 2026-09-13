@@ -97,6 +97,16 @@ The hypothesis-validation plan runs across all three depths:
   it lives in the fenced `▸ methodology trace`, not the readable requirement. A reader sees *what to build +
   acceptance criteria*; the mapping is the audit trail.
 
+## Gate 9 — Plain tooltips, and text a non-expert can read
+
+Two obligations, one about HTML, one about every word in the report.
+
+**(a) In HTML output, every abbreviation and methodology term gets a tooltip on first use** — `<abbr title="…">` or an equivalent hover — carrying a plain one-line explanation: `<abbr title="the outcome the customer is really after, one level above what our product does">Big Job</abbr>`. This covers methodology terms (Core Job, Big Job, Aha Moment, Consideration Set, RAT), business abbreviations (TAM, SAM, SOM, ACV, LTV, CAC, ARR), and any technical shorthand that reaches the page (STT, speaker diarization, NPS, churn). Style the tooltip target so the reader can see it is hoverable (a dotted underline is enough), and keep the plain wording inline as well where the sentence allows — a tooltip is a bonus, never the only place an unfamiliar word is explained.
+
+**(b) Hard rule for every tooltip and every line of report text: a person with zero methodology knowledge must understand it.** Write it the way you would explain it to a bright 8-year-old — everyday words, one idea per sentence, no unexplained jargon. *"Speaker diarization"* → *"working out who said which part of the recording."* *"STT"* → *"turning speech into text."* *"Positive prediction error"* → *"the moment something turns out better than the person expected."* If a sentence can only be read by someone who already knows the methodology, it fails this gate — rewrite it, don't gloss it.
+
+**Check:** pick any three unfamiliar terms in the finished file. Each has a plain explanation the reader can reach without leaving the page, and each explanation is itself free of jargon.
+
 > **Not a gate:** absolute file length. The 3-layer doc may run longer than the old single report — that is
 > fine. The plain layers earn their length by giving the casual reader an exit after one page; we do **not**
 > trade substance to hit a line count.
@@ -113,3 +123,4 @@ The hypothesis-validation plan runs across all three depths:
 - [ ] **Gate 6** *(MR)* — target segment profiled + strategic rec in Layer 2; full Map of Segments in Layer 3.
 - [ ] **Gate 7** *(MR)* — validation plan touched in L1, listed in L2, detailed per-assumption in L3.
 - [ ] **Gate 8** — GTM copy keeps `[VERIFY]`; PRD mechanic-mapping is fenced, not on the readable requirement.
+- [ ] **Gate 9** — HTML tooltips on every abbreviation/term at first use; every tooltip and every line readable by someone with zero methodology knowledge.

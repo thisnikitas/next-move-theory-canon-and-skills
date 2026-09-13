@@ -1,6 +1,6 @@
 ---
 name: nmt-product-requirements
-description: Turn a chosen segment + Core Jobs into a build-ready PRD (full functionality + edge cases) using Ivan Zamesin's AJTBD / Next Move Theory methodology. It consumes upstream work — segments from /nmt-market-research, value from /nmt-craft-value-proposition — and never re-derives them; with no research done it routes you upstream first, or takes a manually described segment + value for a fast run. Before writing requirements it runs a "challenge the build" gate that looks for a more effective way to hit the same business goal; if a better way wins, the PRD is written for that. Output — a single PRD — functionality mapped Core Job → Big Job → value mechanic → success criteria → Aha Moment on the Critical Chain of Jobs, plus edge cases covering ~90% of use cases. Use when the user says "write the PRD / product requirements" or wants to turn a segment+value or a feature idea into a build spec. Two modes — Quick (default, no internet) and Deep (subagents + web parity check). Plain language; defaults to English.
+description: Turn a chosen segment + Core Jobs into a build-ready PRD (full functionality + edge cases) using Ivan Zamesin's AJTBD / Next Move Theory methodology. Consumes upstream work (segments from /nmt-market-research, value from /nmt-craft-value-proposition) without re-deriving it; with no research done it routes you upstream first, or takes a manually described segment + value. Before writing requirements it runs a "challenge the build" gate that looks for a more effective way to hit the same business goal; if a better way wins, the PRD is written for that. Output — a single PRD — functionality mapped Core Job → Big Job → value mechanic → success criteria → Aha Moment on the Critical Chain of Jobs, plus edge cases covering ~90% of use cases. Use when the user says "write the PRD / product requirements" or wants a build spec from a segment+value or feature idea. Two modes — Quick (default, no internet) and Deep (subagents + web parity check). Plain language; defaults to English.
 user-invocable: true
 ---
 
@@ -10,7 +10,7 @@ user-invocable: true
 
 > **In one breath.** The skill no longer re-derives segments (that is `/nmt-market-research`) or invents value (that is `/nmt-craft-value-proposition`) — it **consumes** their output, and it runs **no research itself**. With no upstream artifact it does one of two things: **route** the user to run `/nmt-market-research` → `/nmt-craft-value-proposition` first (the proper path), or — if the user just wants requirements fast and already knows their segment and value — take the **segment + value straight from the user's description** (the fast path) and skip research entirely. It then adds a **"challenge the build"** gate before any requirement is written — *is building this even the right move, or is there a cheaper, more effective way to hit the same business goal?* — and writes the PRD for whatever wins. The deliverable is a **single PRD, short by default**: the one-page summary (what we're building · who it's for · the moment that proves it works · the single riskiest thing to validate before building · what to build first) is what most readers need; the full functional requirements and the ~90% edge-case table sit underneath as a deeper layer for whoever builds it. Internal methodology citations are kept out of the reader's reading flow; project rule numbers never appear in the output. Canon is **loaded progressively** — an eager core up front, staged files only at the stage that needs them. Landing/ad/GTM copy moved to `/nmt-craft-go-to-market`; analytics and a standalone unit-economics model are out of scope (unit economics survives only as a reasoning filter).
 
-> **Producer contract (binding) — `../PRODUCER-CONTRACT.md`.** Six cross-cutting behaviors shared by all producer skills, from user feedback: (1) print a **helicopter-view** before the first question; (2) ask **Markdown or HTML** output; (3) treat **all** user input as hypothesis and emit a *"risks I see in what you gave me"* block; (4) print **validation debt** and write **`GO (to validation)`**, never bare `GO`; (5) accept a **custom output path**; (6) Deep mode runs an **evidence floor + self-critic loop** and offers a **web-MCP fallback**. The hooks below wire each into this skill; the contract is the source of truth for the wording. This skill is the **closest-to-build** artifact in the chain, so the validation-debt + *"validate before you build, don't build yet"* framing (§4) carries the most weight here — get it right.
+> **Producer contract (binding) — `../PRODUCER-CONTRACT.md`.** Eleven cross-cutting behaviors shared by all producer skills, from user feedback: (1) print a **helicopter-view** before the first question; (2) ask **Markdown or HTML** output; (3) treat **all** user input as hypothesis and emit a *"risks I see in what you gave me"* block; (4) print **validation debt** and write **`GO (to validation)`**, never bare `GO`; (5) accept a **custom output path**; (6) Deep mode runs an **evidence floor + self-critic loop** and offers a **web-MCP fallback**. Five more came from the anti-hallucination pass: (7) ask the **market + audience language** and build every example, channel, and price anchor from it; (8) **list the repo-context files found on disk and read them only after a yes**; (9) every claim carries its **status** — backed, derived, or the model's own hypothesis; (10) **frequency counts on every aggregated claim**, and a single source never carries a segment-level conclusion; (11) **confidence scaled to the input** — thin input gets ranges, a visible warning, and the top-3 inputs that would fix it. The hooks below wire each into this skill; the contract is the source of truth for the wording. This skill is the **closest-to-build** artifact in the chain, so the validation-debt + *"validate before you build, don't build yet"* framing (§4) carries the most weight here — get it right.
 
 ## Where this skill sits in the chain
 
@@ -152,6 +152,28 @@ The PRD's **default face is the one-page summary** — what we're building, who 
 - **Unique, resolving anchors.** Every `▸` drill-down link points to its own unique `<a id="…">` that exists **exactly once**; no two links share a target. Before shipping, list every `▸` target and confirm each resolves.
 - **Inline-gloss opaque Layer-3 table headers.** A non-obvious column header (in the edge-case, requirement, or gate tables) carries a 3–6-word plain gloss right there. Don't rely on the glossary file.
 - **The readable requirement is clean.** Per requirement, the reader sees what-to-build + acceptance criteria; the methodology mapping (`mechanic:` etc.) lives only in the fenced trace.
+- **In HTML, every term is glossed on first use** — `<abbr title="…">` on each abbreviation and methodology term, and no tooltip explains one term with another (see "Output file").
+
+---
+
+## Claim statuses — and confidence scaled to the input
+
+**Every claim in the PRD carries one of three statuses, visibly.** The reader must always be able to tell where a line came from:
+
+- **Backed** — a quote, a number, or a document stands behind it. Say which (*"from the sales calls you shared: 7 of 12 named setup time"*); external sources are clickable links (Rule 2).
+- **Derived** — it follows from something backed. Say from what (*"derived from the segment's stated bar: under 10 minutes to first result"*).
+- **Hypothesis** — my own guess, marked as such in plain words (*"my hypothesis, unverified"*).
+
+Two hard rules sit on top:
+
+- **A number a person said is that person's opinion, not a market figure.** *"60–70% of deals go through tenders"* from a sales lead is written *"per the sales lead — their estimate, not a measured figure"*, and never feeds sizing, pricing, or a requirement's acceptance criteria as if it were data.
+- **Anything I invented that appears in none of the inputs lives only under "Hypotheses to validate."** A capability, a guarantee, a workflow, or a customer need that no interview, document, or user statement mentions — a warranty nobody asked for — may appear as a hypothesis to test in §7 risk, never inside the functional requirements, the value line, or Layer 1 as if the customer wanted it.
+
+**Confidence is computed from the input, not asserted.** Count what actually arrived — an upstream artifact, interviews, analytics, documents. When the run has none of them (Path D with a description only), the PRD says so at the very top, and Layer 1 reads in ranges:
+
+> ⚠️ **Thin input.** This PRD was written from a description only — no interviews, no analytics, no upstream research. Numbers are ranges, not point estimates, and the segment and its Jobs are hypotheses. The three inputs that would most raise accuracy: {top 3, concrete — e.g., 5 interviews with people who already pay for the current alternative · the activation funnel by weekly cohort · the margin per customer}.
+
+Use ranges wherever the input is thin, and keep the hedging proportional — a PRD built on a real value-proposition artifact plus interviews should read more confidently than one built on a paragraph. This is separate from the fixed disclaimers: those are always there, this one is computed from what the user gave you.
 
 ---
 
@@ -164,6 +186,8 @@ Skills-Results/{product-slug}/product-requirements/{YYYY-MM-DD_HH-MM}_{product-s
 ```
 
 - **Extension follows the chosen output format** (`PRODUCER-CONTRACT.md §2`): `.md` (default) or a single self-contained `.html` (inline CSS, working in-page anchors for the How-to-read jumps + every `▸` drill-down link, `<details>` for Layer 3 and methodology traces, source links opening in a new tab). HTML carries the identical content — same attribution, disclaimers, three layers, tables, links — just in a more readable shell. Never write both; one file per run.
+- **HTML: a tooltip on every term, and text a beginner can read.** In the `.html` file, wrap each abbreviation and methodology term in `<abbr title="…">` the first time it appears — *RAT, CAC, LTV, MVP, Core Job, Big Job, Critical Chain of Jobs, value mechanic, Aha moment*. **Hard rule: every tooltip and every line of the PRD must land for someone who has never heard of this methodology — everyday words, explained like to a smart 8-year-old, no abbreviation left unglossed.** If a tooltip needs a second term to explain the first, rewrite it in plain words.
+- **Checkpoint a long run into that same file.** On a Deep run — or any long Quick run — write Layer 3 into the result file section by section as each finishes, instead of holding the whole PRD to the end; when Layers 2 and 1 are computed (still last, from the finished spec), rewrite the file with them on top. An interruption then costs the last section, not the run. Still exactly one file (Rule 4).
 - If the user gave a custom output path (intake S0), write the one file there with the same filename pattern.
 
 Everything internal — the normalized input, the challenge (business-goal ladder, subtraction-first, the more-effective ways and which won, the locked build subject), the Critical Chain of Jobs per Core Job, dropped alternatives, and the self-critic verdicts — **stays in-context**; none of it is written to a separate file. The timestamp makes each run's file unique, so reruns never overwrite. Disclaimers (Rule 3) go at the top of this one file.
@@ -175,7 +199,7 @@ Everything internal — the normalized input, the challenge (business-goal ladde
 ## The pipeline (S0 → S5)
 
 ```
-S0  Intake & route ──────(human: language, mode, input path) ──► [no research path? → route OUT
+S0  Intake & route ──────(human: market + language, mode, input path) ──► [no research path? → route OUT
      │                                                              to /nmt-market-research → /craft-value-
      │                                                              proposition, OR take a manual
      │                                                              segment+Jobs+value to write fast]
@@ -216,8 +240,10 @@ This is about the **number of questions** I ask you — independent of the Quick
 
 On **Just the essentials**, ask only the load-bearing fields and infer or defer the rest — for the PRD that means: where you're starting from, the segment + value (consumed or described in a sentence each), and the business goal. Skip or batch the materials/claims-ledger and business-context details into one short pass, and flag in the result anything that was inferred. On **The full interview**, run the complete intake below (materials, claims ledger, every business-context field). Either way, no canonical Job form is ever required from the user — describe the segment and value in plain sentences and the skill shapes the grammar internally.
 
-### Language
-Default **English**. If the user writes in another language, offer to work in it (English / their language / Other). Hold the choice in context. The PRD uses the chosen language; canon files and source URLs stay as-is.
+### Market & language (both asked in intake — the market question is mandatory)
+
+- **Market / geography + the customers' language.** *"Which market or country is this product for, and what language do your customers speak?"* Not optional, and not inferred from the user's own language: every example, competitor, channel, price anchor, regulation, and the tone of the PRD comes from **that** market. Never default to the US — or to Russia — when the user named another one; Central Asia is not Russia, the UAE is not the US. If an upstream artifact already names the market, confirm it in one line instead of re-asking.
+- **Document language.** Default **English**. If the user writes in another language, offer to work in it (English / their language / Other). Hold the choice in context. The PRD uses the chosen language; canon files and source URLs stay as-is.
 
 ### One batched `AskUserQuestion`
 
@@ -228,21 +254,25 @@ Q1 "Where are you starting from?  (No prior research is fine — option D is a f
   - "I have a /nmt-market-research result"            → Path B (segments present; value not yet crafted)
   - "I haven't done research and want to"         → Path C (ROUTE OUT — run the chain first)
 
-Q2 "Mode?  (separate from the intake-depth choice above — this is about internet)"
+Q2 "Which market / country is this for, and what language do your customers speak?"
+  → free text (mandatory — skip only if an upstream artifact already says, then confirm it)
+  Every example, competitor, channel, price anchor and the PRD's tone come from this market.
+
+Q3 "Mode?  (separate from the intake-depth choice above — this is about internet)"
   - "Quick (default — fast, no internet)"
   - "Deep (subagents + web parity check)"
 
-Q3 "Output format?"  (PRODUCER-CONTRACT.md §2)
+Q4 "Output format?"  (PRODUCER-CONTRACT.md §2)
   - "Markdown (default — faster to generate; opens anywhere)"
   - "HTML (a bit slower; easier to read — collapsible sections + working
      in-page navigation; all source and drill-down links stay clickable)"
 
-Q4 "Where to save the result?"  (PRODUCER-CONTRACT.md §5)
+Q5 "Where to save the result?"  (PRODUCER-CONTRACT.md §5)
   - "Default — Skills-Results/{project}/product-requirements/…"
   - "A folder / path to match your repo (e.g., docs/specs/)"  → free text
   (Skip = default. One file per run regardless of location — Rule 4.)
 
-Q5 (Paths A/B only) "Path to the upstream result file?"  → free text; Read it.
+Q6 (Paths A/B only) "Path to the upstream result file?"  → free text; Read it.
 ```
 
 ### Resolve the input path
@@ -257,7 +287,10 @@ Q5 (Paths A/B only) "Path to the upstream result file?"  → free text; Read it.
 
 ### User materials, claims ledger, input-as-hypothesis gate, direction confirmation (all paths)
 
-- **Materials.** Ask once: *"Any files or folders with material I should use — a Notion export (markdown), past research, interview notes, an existing spec, your current site?"* Read what's given; tag everything taken from it **[user data]** in-context — and **never silently carry a user's existing positioning, copy, or feature list into the PRD as a settled decision**: confirm first that it should carry over (it may be exactly what the challenge step should challenge).
+- **Materials — look before you ask, but ask before you read.** First check the working directory for files that look like product context: a `README` or product docs, an existing spec or PRD, customer surveys, store or site reviews, support and sales logs, interview notes, analytics or revenue exports, a deck, a roadmap. If any exist, **list them and ask permission before opening any of them**:
+  > I can see files here that look like product context: `{list, ~10 max}`. Want me to read them so I don't ask you for things they already answer? **This context is processed only by your agent locally — it is not sent anywhere.**
+
+  Read only after a yes, and only the approved files. Then ask the open question once for anything outside the folder: *"Any other files, folders, or links I should use — a Notion export (markdown), past research, interview notes, your current site?"* Replay in two lines what you took from what you read, and ask only the gaps. Tag everything taken from any of it **[user data]** in-context — and **never silently carry a user's existing positioning, copy, or feature list into the PRD as a settled decision**: confirm first that it should carry over (it may be exactly what the challenge step should challenge).
 - **User-claims ledger + input-as-hypothesis gate (`PRODUCER-CONTRACT.md §3`).** Collect every strong factual claim in the user's input — and every load-bearing input from the upstream artifact and the uploaded materials (a deck, a landing page, a codebase, the manually-described segment + value on Path D) — into an in-context ledger. **All of it is hypothesis, not fact** — a landing page is the team's belief about value, not proof customers want it; a stated segment + value can be the team's projection of the customer's Job rather than the customer's real one (the most expensive error). Tag each as **data** (measured / documented), **observation** (seen in interviews, sales), or **hunch** (belief, intuition — the default for anything from a deck / landing / the idea description). **Actively hunt the risks inside each load-bearing input** (don't just record it): is this customer-validated, or the team's belief about the customer? Does the stated Job / segment look like the customer's real Job, or the team's projection of it? Any internal contradictions, or guesses dressed as data? Hold the findings in context — they become the **"What you told me — and the risks I see in it"** block in Layer 2 (see the Layer-2 template), with the single worst one surfaced in Layer 1.
 - **Hard gate (`PRODUCER-CONTRACT.md §3c`).** **No PRD scope, Core-Job selection, or challenge verdict may rest *primarily* on an unvalidated user input without the PRD saying so explicitly and pointing a RAT row at it.** If the build scope leans on a Job or value taken from the user's materials and not confirmed by customer evidence, that is named in §7 as the single most expensive risk, with the cheapest falsifying test attached — and it is the *"single riskiest thing to validate BEFORE building"* in Layer 1.
 - **Direction confirmation.** Before S1, play the understanding back in one short block — *"Here's what I understood: {what we're building, for whom, the business goal, what's already decided vs open}"* — and confirm via one `AskUserQuestion` (Confirm / Correct).
@@ -281,6 +314,14 @@ Q "Which segment do we build for?"
 ```
 
 If the user picks **"None of these"**, the skill does **not** go discover a new market itself — it offers the two real options: *describe a different segment now (continue on the fast path), or run `/nmt-market-research` to find and score better segments and come back.* Never force a segment.
+
+**Sanity-check the segment before building on it** (consuming is not the same as accepting — `segmentation.md §2, §7`; load that file if this check fires):
+
+- **A purchase channel is not a segment.** *"Buys through tenders", "comes via the app store", "inbound vs outbound"* mixes people with different Core Jobs — a reseller and an end customer buying through the same tender want different outcomes and judge success differently.
+- **An industry or vertical is not a segment when the Core Jobs and success criteria coincide.** Don't split a B2B base into *logistics / retail / manufacturing* unless the criteria genuinely differ; if they're the same, it is one segment that happens to span industries.
+- **Every segment is defined by Core Jobs + success criteria (and their priority order).** If the cut you were handed is demographic, channel-based, or industry-based, either name the causal link from that cut to the Jobs and criteria, or merge it back into one segment.
+
+If the check fails: say so to the user in one line, fix the cut in-context (merge, or re-cut by Jobs), and record it in Layer 2's *"what you told me — and the risks I see in it"* block. Never write requirements against a channel or an industry.
 
 Then select the **Core Jobs** to design for (these are what the product performs fully — `job-graph.md §2`):
 
@@ -363,7 +404,7 @@ Assemble the single output file as **three reading depths, linked top-to-bottom*
 <a id="disclaimers"></a>
 > **Numerical disclaimer.** All numerical estimates are LLM-generated hypotheses, each with a runnable verification path. Validate before any major decision.
 > **Hallucination disclaimer.** Generated by an LLM; may contain hallucinations in unknown places. For expensive decisions, run a full research pass; do not act on this document alone.
-> ⚠️ {Path D → reduced-confidence flag; Path A/B → name the source artifact file path; if the challenge changed the build subject, say so in one line.}
+> ⚠️ {Input honesty — if the run had no interviews, no analytics, and no upstream artifact, print the **Thin input** banner here (see "Claim statuses"), with the top-3 inputs that would raise accuracy; Path A/B → name the source artifact file path; if the challenge changed the build subject, say so in one line.}
 ```
 
 #### How to read this — the three levels
@@ -520,7 +561,7 @@ Render as a table, sorted by **importance-driven severity** (high-importance bre
 > <sub>**▸ methodology trace.** {fence the canon refs — break sites, context→criteria, Tax Jobs, severity by importance — here.}</sub>
 
 ### 5. Competitive parity *(reused from upstream — do not re-mine in Quick mode)*
-- Functionality that must at least match competitors (from the upstream competitor set).
+- Functionality that must at least match competitors (from the upstream competitor set) — **competitors from the user's market**, not the US defaults, unless the US *is* their market.
 - Functionality competitors close poorly = our wedge (the underserved success-criterion intersection).
 - (Deep mode refreshes this against live competitor sites + reviews.)
 
@@ -551,7 +592,7 @@ Render as a table, sorted by **importance-driven severity** (high-importance bre
 Run the **self-critic** over the draft (Quick: a self-critique pass; Deep: a separate critic agent), fix in place, keep verdicts in-context. Then write the single result file and give the user a brief chat summary: what the challenge decided, what the PRD covers, the Aha Moment, the riskiest assumption to validate first, and the file path. Offer the handoff: *"Feed this PRD to `/nmt-craft-go-to-market` for landing + ad + GTM copy."*
 
 ### Self-critic criteria (methodology only — format is guaranteed by the template)
-1. **No segment re-derivation** — the segment/Core Jobs were consumed from an upstream artifact or taken from the user's description; never discovered, sized, or scored inside this skill.
+1. **No segment re-derivation, and the consumed segment passed the sanity check** — the segment/Core Jobs were consumed from an upstream artifact or taken from the user's description, never discovered inside this skill; and the cut is Core Jobs + success criteria, not a purchase channel, an industry with identical criteria, or a demographic (S1 check).
 2. **Challenge ran first** — the business goal was laddered, subtraction-first asked, local-vs-global named, and the PRD is written for the *winning* build subject.
 3. **Every feature ladders Core Job → Big Job AND names a value mechanic** — no bare features.
 4. **Aha Moment is a real positive-prediction-error event**, placed as far left as the chain allows — not signup/login.
@@ -561,7 +602,10 @@ Run the **self-critic** over the draft (Quick: a self-critique pass; Deep: a sep
 8. **Out-of-scope names the anti-segment and the subtracted Jobs** — focus is visible.
 9. **Disclaimers present; external sources are clickable links; US-context analogs; no PPE/NPE** (`CLAUDE.md` Rules 2, 3, 6, 19, 22).
 10. **Step ledger ran** — every stage S0–S5 checked off by name; a skipped stage (e.g., the challenge collapsed to a one-line confirm) was declared, never silent.
-11. **User claims stayed hypotheses** — ledger claims tagged (data / observation / hunch); no requirement or challenge-verdict rests primarily on a single unverified user hunch without saying so; nothing from the user's existing materials was carried into the PRD as a settled decision without confirmation.
+11. **User claims stayed hypotheses** — ledger claims tagged (data / observation / hunch); no requirement or challenge-verdict rests primarily on a single unverified user hunch without saying so; nothing from the user's existing materials was carried into the PRD as a settled decision without confirmation; files found in the working directory were listed and read only after permission (with the local-processing notice).
+12. **Every claim carries a status** — backed / derived / hypothesis, visibly; a number someone said is labeled as that person's estimate, not market data; nothing I invented that appears in no input sits inside the requirements or the value line — it lives under "hypotheses to validate."
+13. **Confidence matched the input** — the Thin-input banner + ranges + the top-3 accuracy-raising inputs are present when the run had no interviews, analytics, or upstream artifact; the hedging is proportional, not boilerplate.
+14. **The user's market ran through the whole PRD** — market and customer language captured in intake; competitors, parity, channels, price anchors, regulatory edge cases, and examples come from that market, with no US or Russian defaults pasted in.
 
 - [ ] Plain-language-led — the PRD leads in the reader's own words; methodology terms only in parentheses (never jargon-first); Layer 3 may stay in full terms.
 - [ ] **Three layers present and correctly leveled** — Layer 1 (minimal jargon, plain words lead, terms only in parentheses, forwardable), Layer 2 (plain reasoning, terms glossed), Layer 3 (the full build spec). No conclusion is repeated at the same depth across layers.
@@ -581,8 +625,9 @@ Same S0→S3 with the human; S4 parallelized and web-grounded. Agents are spawne
 ```
 Wave 1 (parallel):
   [PARITY]  Competitor-parity refresh — only if upstream parity is stale or absent. Reads eager core only.
-            Given the upstream competitor set, confirm/extend the parity table from live sites + reviews; mark
-            what competitors close poorly (the wedge). ≤8 fetches. → returns the parity table in-message.
+            Given the upstream competitor set, confirm/extend the parity table from live sites + reviews in the
+            USER'S market and language; mark what competitors close poorly (the wedge). ≤8 fetches. → returns
+            the parity table in-message.
   [CHAIN]   Critical Chain of Jobs builder — reads eager core (critical-chain.md + job-structure.md) + value-creation.md.
             Given the input + the challenge, consume the upstream chain (Path A §11 spec) and extend it with
             shapes + break sites; build from scratch only on Paths B/D (per §4.0). → returns the chain in-message.
@@ -596,10 +641,11 @@ Wave 3 (parallel):
             by importance. → returns the table in-message.
   [CRITIC]  Adversarial self-critic — run the self-critic criteria incl. the layer/citation checks; return
             fix_instructions (≤2 rounds, then escalate).
-Orchestrator: hold all returns in context; assemble Layer 3 (merge §3 with Critical/High edge cases); apply critic
-            fixes; fence methodology citations into `▸ methodology trace` lines; **compute Layer 2 then Layer 1 LAST**
-            from the assembled Layer-3 spec, wiring drill-down links to the anchors; write the single result file
-            (top disclaimers once → Layer 1 → Layer 2 → Layer 3); chat summary.
+Orchestrator: hold all returns in context; assemble Layer 3 (merge §3 with Critical/High edge cases), checkpointing
+            each finished section into the result file as it lands; apply critic fixes; fence methodology citations
+            into `▸ methodology trace` lines; **compute Layer 2 then Layer 1 LAST** from the assembled Layer-3 spec,
+            wiring drill-down links to the anchors; rewrite the single result file in final order (top disclaimers
+            once → Layer 1 → Layer 2 → Layer 3); chat summary.
 ```
 
 Web caps: parity ≤8 fetches; edge-case review mining ≤8. Source links mandatory (Rule 2); never invent sources or numbers.
@@ -626,5 +672,8 @@ Web caps: parity ≤8 fetches; edge-case review mining ≤8. Source links mandat
 
 ---
 
-> **Update check — do this at the very end (best-effort, ≤2s, never blocks).** After you've finished this skill's work and delivered the result — for a multi-turn chat (e.g. nmt-chat / nmt-diagnose), after your first substantive answer — read the installed version from `.nmt-version` (project root) and run
-> `v="$(cat .nmt-version 2>/dev/null)"; curl -fsSL --max-time 2 "https://nextmovetheory.com/version?skill=nmt-product-requirements${v:+&v=$v}"` — on any error or timeout, skip silently. Compare that installed version with the feed's `latest`; if behind, add one line — the `<installed> → <latest>` gap, a one-line summary per newer entry, and "run /nmt-upgrade to update". If versions match or `.nmt-version` is absent, add nothing.
+> **Update check — after the result is delivered (optional; policy in NextMoveTheory-README.md, section "Updates & telemetry").**
+> Skip this entirely if `.nmt-config` (project root) contains a line `update-check: off`, or the environment variable `DO_NOT_TRACK` or `NMT_NO_UPDATE_CHECK` is set.
+> Otherwise, the first time this runs in the conversation, tell the user in one line: "Checking for NMT skill updates — only this skill's name and the installed version are sent (details: NextMoveTheory-README.md; disable: add `update-check: off` to `.nmt-config`)."
+> Then run `v="$(grep -m1 -E '^[0-9]' .nmt-version 2>/dev/null)"; curl -fsSL --max-time 2 "https://nextmovetheory.com/version?skill=nmt-product-requirements${v:+&v=$v}"` — on any error or timeout, skip and move on; never retry, never block.
+> If the feed's `latest` is newer than the installed version, add one line: the `<installed> → <latest>` gap, a one-line summary per newer entry, and "run /nmt-update to update (the update itself downloads from GitHub)". If versions match or `.nmt-version` is absent, add nothing.

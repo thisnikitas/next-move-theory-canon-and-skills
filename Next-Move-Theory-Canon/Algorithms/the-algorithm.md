@@ -18,23 +18,28 @@ The algorithm is a loop, not a one-shot run. Every action produces new data for 
 
 > Full treatment in [Next Move Theory key theses §4](../Next-Move-Theory/nmt-key-theses.md) and [AJTBD key theses §14](../Advanced-Jobs-To-Be-Done/ajtbd-key-theses.md).
 
-The chain is sequential up to value. Then it branches into three conditions that must hold at the same time. Then it converges into conversion, retention, and profit. Every step inherits the quality of the step above it. So the diagnostic runs top-down: investigate the upstream node first.
+The chain has two phases. Research and validation ends when customers have proven they buy. Scaling ends at target profit. The same three conditions are checked twice: in theory before the build, in fact on the customer flow. Every step inherits the quality of the step above it. So the diagnostic runs top-down: investigate the upstream node first.
 
 ```
-Market with money
-  → Segment + Job          (one analytical entity, not two steps)
-  → Added Value
-  → ┌─ Business model & Unit Economics — positive per-unit math
-    ├─ Ability to create demand & acquire customers — at target CAC and lead quality
-    └─ Ability to scale, incl. customer service — without quality decay
-  → Unit Economics keeps closing at scale — conversion + retention + repeat
-  → Target Profit
+RESEARCH AND VALIDATION
+  1. Market with money — 1 %, 5 %, or 10 % of the market can deliver the target profit
+  2. Segment + Job — segments large enough, whose Jobs we can perform with Added Value,
+     with competition low enough to reach the target conversion to purchase
+  3. In theory, three conditions hold at once:
+     ┌─ target margin per unit
+     ├─ target volume of leads
+     └─ scale without quality decay
+  4. Proof of value — customers buy, and we know what value they pay for
+
+SCALING
+  5. In fact, on the customer flow, the same three conditions hold at once
+  6. Target profit
 ```
 
 - Market with money is defined in Job terms. Not *"the EdTech market"* but *"the sum people spend to learn a skill in order to switch careers."*
 - Segment + Job is one entity. A segment is defined by its Job Graph: similar Core Jobs with similar success criteria. The Big Job above is motivational context, not the segmentation cut (see [Segmentation](../Advanced-Jobs-To-Be-Done/segmentation.md)).
-- The three conditions after value are tested in parallel, not in sequence. This is why RAT (Step 8) treats its baseline risks as simultaneous tests.
-- **A broken metric almost never means a problem at that metric.** Low conversion, high CAC, and high churn are usually upstream. The cause is a wrong Segment+Job, value that doesn't beat the alternatives, or one of the three parallel conditions failing.
+- The three conditions are tested in parallel, not in sequence, in both phases. This is why RAT (Step 8) treats its baseline risks as simultaneous tests. Margin per unit holds on the flow only while conversion, churn, and repeat stay at target; retention is inside the first condition, not a separate node.
+- **A broken metric almost never means a problem at that metric.** Low conversion, high CAC, and high churn are usually upstream. The cause is a wrong Segment+Job, value that doesn't beat the alternatives, or one of the three conditions failing.
 
 ## 3. Architecture — ten steps, three phases, one loop
 

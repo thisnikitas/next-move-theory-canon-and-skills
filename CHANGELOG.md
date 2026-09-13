@@ -7,11 +7,11 @@ version is available. To update to the latest at any time, run from your project
 root:
 
 ```bash
-curl -fsSL https://nextmovetheory.com/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/zamesin/Next-Move-Theory-Canon-and-Skills/main/install.sh | bash
 ```
 
-or use the `/nmt-upgrade` skill (Codex: `$nmt-upgrade`). Windows (PowerShell):
-`irm https://nextmovetheory.com/install.ps1 | iex`.
+or use the `/nmt-update` skill (Codex: `$nmt-update`). Windows (PowerShell):
+`irm https://raw.githubusercontent.com/zamesin/Next-Move-Theory-Canon-and-Skills/main/install.ps1 | iex`.
 
 ## Versioning
 
@@ -23,12 +23,28 @@ Theory** as SemVer `MAJOR.MINOR.PATCH`:
 - **PATCH** — small skill updates and methodology patches.
 
 The current version is the top entry below. The installer records it in
-`.nmt-version`; the skills read `https://nextmovetheory.com/version` on launch to
-tell you when you're behind and what changed since your version. (The README also
-shows the methodology maturity badges — Advanced JTBD `v3.4 · stable` and Next
-Move Theory `v0.6 · in active development`.)
+`.nmt-version`; at the end of a run each skill checks whether a newer version is
+published and tells you what changed since yours. The check sends only the skill
+name and the installed version, and it is opt-out — see *Updates & telemetry* in
+the README. Updates themselves always download from the public GitHub repo. (The
+README also shows the methodology maturity badges — Advanced JTBD `v3.4 · stable`
+and Next Move Theory `v0.6 · in active development`.)
 
 ---
+
+## 0.6.18 — Transparent updates, GitHub-based installs, and an anti-hallucination pack
+**Summary:** Update checks are now transparent and one-line opt-out, updates download from GitHub, `/nmt-upgrade` became `/nmt-update`, the rules block injected into your CLAUDE.md shrank to five lines, and the producer skills got a hard anti-hallucination pack — frequency counts, claim statuses, segmentation guards, and honesty about thin input.
+**Released:** 2026-09-13
+
+- **Transparent, opt-out update checks.** The check runs at the end of a run, announces itself in one line the first time, and sends only the skill name and the installed version. Turn it off with `update-check: off` in `.nmt-config`, or `DO_NOT_TRACK=1`, or `NMT_NO_UPDATE_CHECK=1`. The new *Updates & telemetry* section of the README states exactly what is and isn't collected.
+- **Updates come from GitHub.** The installer, the one-liners, and the version lookup all read the public repo (`zamesin/Next-Move-Theory-Canon-and-Skills`) directly — no site round-trip in the update path.
+- **`nmt-upgrade` is now `nmt-update`** (`/nmt-update`, Codex `$nmt-update`). The installer removes the old skill folder and installs the new one, so you won't end up with both.
+- **A much smaller footprint in your rules file.** The block injected between the `Next-Move-Theory-Rules` markers in `CLAUDE.md` / `AGENTS.md` is five lines: where the canon is, start with `/nmt-chat`, where outputs go, where the full guide is. Your own content outside the markers is untouched, as before.
+- **Anti-hallucination pack in the producer skills.** Every aggregated claim now carries a frequency count and its source references, and a single-source claim can no longer become a segment-level conclusion — it goes to a *Single signals* list. Every claim is tagged as backed by a quote, derived from the data, or the model's own hypothesis; numbers a respondent said out loud are labelled as that person's opinion, not market fact; ideas the model invented live only in *Hypotheses to validate*. Segmentation runs through an explicit guard list: purchase channel is not a segment, industry is not a segment when the Core Jobs and success criteria coincide, and every segment is defined through Core Jobs + success criteria. Interview analysis ships a source-to-segment appendix so every "16 deals in this segment" total can be re-checked line by line.
+- **Honesty scaled to your input.** With thin input the report says so in the header, gives ranges instead of point numbers, and lists the top three inputs that would most improve the answer.
+- **Market and language are asked up front.** Examples, channels, price anchors, competitors, and tone all come from your market — no silent US or Russian default.
+- **Repo context is read only with permission.** The skills list the context files they found in your folder and ask before opening them, with a plain notice that the content is processed locally and sent nowhere.
+- **Plain tooltips in HTML output.** Every abbreviation and methodology term is explained on first use, in words that assume no methodology knowledge.
 
 ## 0.6.17 — Plain-language skills + a clearer first run
 **Summary:** Skills now lead in plain words (methodology terms in parentheses), point you to /nmt-chat when you're unsure where to start, ask "quick vs thorough" up front, and keep answers shorter. No methodology change.
