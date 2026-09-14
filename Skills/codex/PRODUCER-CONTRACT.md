@@ -1,12 +1,12 @@
-# Producer contract — six cross-cutting behaviors (binding for all producer skills)
+# Producer contract — eleven cross-cutting behaviors (binding for all producer skills)
 
-> The four producer skills (`nmt-market-research`, `nmt-craft-value-proposition`, `nmt-product-requirements`,
-> `nmt-craft-go-to-market`) share six behaviors that came directly from user testing feedback.
-> Specifying them once here keeps the four skills in sync. Each skill points to this file and wires the
+> The five producer skills (`nmt-market-research`, `nmt-craft-value-proposition`, `nmt-product-requirements`,
+> `nmt-craft-go-to-market`, `nmt-analyze-interviews`) share eleven behaviors that came directly from user
+> testing feedback. Specifying them once here keeps the five skills in sync. Each skill points to this file and wires the
 > concrete hooks (intake questions, template blocks) into its own flow. The companion file
 > `READABILITY-CONTRACT.md` governs the 3-layer output; this file governs intake + framing + integrity.
 
-The six behaviors:
+The eleven behaviors:
 
 ## Codex interactive intake compatibility
 
@@ -27,6 +27,11 @@ This section is a Codex-only override in the `Skills/codex` / installed `.agents
 4. **Visible validation debt** — print how many unvalidated assumptions the artifact stands on; `GO` → `GO (to validation)`.
 5. **Configurable output path** — default `Skills-Results/…`, but accept the host repo's convention.
 6. **Deep-mode QA loop + web-MCP fallback** — Deep mode must meet an evidence floor and self-check; recommend a web MCP when the built-in fetch is blocked.
+7. **Market and language intake** — ask which market and which audience language, and build everything from that answer.
+8. **Repo context by permission** — list the context files found on disk and read them only after a yes.
+9. **Every claim carries its status** — quoted, derived, or the model's hypothesis; a spoken number is an opinion.
+10. **Frequency counts on aggregated claims** — how many sources said it, and which; a single source can't carry a segment.
+11. **Confidence scaled to the input** — thin input gets ranges, a visible warning, and the top-3 inputs that would fix it.
 
 ---
 
@@ -130,6 +135,64 @@ From user testing: *"`$nmt-craft-value-proposition` promised deep research, made
 
 If such an MCP is connected (discoverable via tool search), prefer it for blocked sources; otherwise proceed and flag thin coverage in the verification checklist.
 
+## 7. Market and language intake (a mandatory intake question)
+
+From user testing: a run for a Central Asian market came back with US acquisition channels, US price anchors, and US competitor names — an artifact the user could not act on.
+
+**Ask in the intake batch, always, before any analysis:**
+
+> **Market & language** — which country or region are your customers in, and what language do they speak? (e.g. *Kazakhstan, Russian-speaking* · *Germany, German* · *US, English*)
+
+Everything downstream comes from that answer: examples, named competitors, acquisition channels, price anchors, regulation, units and currency, and the tone of any copy. **Never fall back to a US or Russian default because it is the best-covered market in the training data.** Central Asia is not Russia, the UK is not the US, and a wrong market makes every channel and every price in the artifact useless.
+
+Keep the **audience language** separate from the **document language** — the user may want the report in English about a Russian-speaking audience. Ask for both when they differ.
+
+If the question goes unanswered (non-interactive run), name the market you are assuming in one line at the top of the output, and tag every market-specific number as unverified for their market.
+
+## 8. Repo context — list first, read only after a yes
+
+At intake, scan the working directory for files that look like product context: a `README`, product docs, survey exports, review dumps, analytics exports, interview notes or transcripts. **Do not read them yet.** List what you found and ask:
+
+> I found files here that look like product context: {list}. May I read them? **This context is processed only by your agent locally — it is not sent anywhere.**
+
+Read only what the user approves. If they decline — or if there is no way to ask — proceed without the files and say so in one line. Even under a blanket yes, never open files that look like secrets or private material (`.env`, credentials, personal notes); name the specific files you are about to read.
+
+Anything read this way is still user input under §3: a hypothesis, entered in the *"What you told me"* ledger, never a fact.
+
+## 9. Every claim carries its status
+
+Every claim in the output is one of three things, and says which:
+
+- **Backed** — a quote or a number that is actually in the source. Cite it: the quote, or the file and row it came from.
+- **Derived** — inferred from the data. Say *from what*: *"derived from the 4 calls where the buyer named price before delivery."*
+- **Model hypothesis** — the skill's own idea, present in none of the sources. Label it as such.
+
+**A number a respondent said out loud is that person's opinion, not a market fact.** *"60–70% of deals go through tenders"* ships as *"per the sales director — an estimate, not a measured figure."* A spoken number never becomes a market-sizing input, a chart value, or a headline without an outside source behind it (Rule 2).
+
+**Ideas the model invented stay out of the findings.** A warranty nobody mentioned, a persona nobody described, a channel nobody named — these may appear **only** in a clearly-marked *"Hypotheses to validate"* section, never inside the value proposition, the segments, the sizing, or the verdict as if the data supported them.
+
+## 10. Frequency counts on every aggregated claim
+
+Wherever the skill aggregates claims from source material — interviews, sales calls, reviews, support logs, survey open-ends, documents the user supplied — **every segment-level or market-level claim carries a frequency count and its source references**: *"said in 7 of 22 interviews: #3, #7, #9, #11, #14, #18, #21."* Without the count and the list, the claim does not ship.
+
+**A claim supported by exactly one source may not appear in a segment-level or market-level conclusion.** It goes into a separate list — *"Single signals — verify before acting"* — with its source and what would confirm it.
+
+**One vivid quote is never "the segment's main pain."** Vividness is not frequency; a memorable sentence from one respondent is the most common way a report invents a segment that isn't there.
+
+## 11. Confidence scaled to the input the user actually gave
+
+Claimed confidence is computed per run from the evidence on hand. This complements the fixed disclaimers (Rule 3) — those are static, this one is measured.
+
+Count the real evidence: interviews, analytics exports, reviews, documents, verifiable external sources.
+
+**Thin input** — no interviews, no analytics, just a description of the idea:
+
+- Put a warning in the header, where it can't be missed: **"Thin input: estimates are ±X ranges, segments are hypotheses."**
+- Give every number as a **range**, not a point value; write *hypothesis* beside every segment.
+- List the **top 3 inputs that would most raise accuracy**, concrete and ordered by how much each would move the answer — *"10 interviews with {segment}," "your last 6 months of activation data," "your win/loss notes."*
+
+With richer input, tighten the ranges and say what they now rest on. A Quick run on one paragraph must never read with the same confidence as a Deep run on twenty interviews.
+
 ---
 
 ## How each skill wires this in (integration checklist)
@@ -143,3 +206,8 @@ A producer skill satisfies this contract when:
 - [ ] Its Layer-1 template carries the **validation-debt line**, and every `GO` is **`GO (to validation)`** (§4).
 - [ ] On hand-off, it asks what validation debt has been retired since the prior artifact (§4c).
 - [ ] Deep mode enforces the **evidence floor + self-critic loop** and offers the **web-MCP fallback** (§6).
+- [ ] Its intake asks **market + audience language**, and every example, channel, and price anchor comes from that market (§7).
+- [ ] It **lists repo context files and waits for a yes** before reading them, with the local-processing notice (§8).
+- [ ] Every claim is tagged **backed / derived / hypothesis**; spoken numbers are labelled as opinion; invented ideas sit only in *Hypotheses to validate* (§9).
+- [ ] Every aggregated claim carries a **frequency count + source list**; single-source claims sit in *Single signals* (§10).
+- [ ] Confidence is **scaled to the input**: thin input gets the header warning, ranges, and the top-3 missing inputs (§11).

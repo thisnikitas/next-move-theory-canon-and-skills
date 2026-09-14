@@ -18,6 +18,8 @@
 # nests `.claude`/`.agents`/canon inside one another. Re-running is idempotent: it
 # replaces the canon, the skills, the marked rules block, and the README in place.
 # It does NOT delete unrelated skills already in .claude/skills or .agents/skills.
+# The one exception is our own renamed skill: an old `nmt-upgrade/` folder is
+# removed and replaced by `nmt-update/`.
 #
 # Usage:
 #   # A) one-liner — fresh install into the CURRENT directory (your project root):
@@ -91,6 +93,9 @@ cp -r "$SRC/Next-Move-Theory-Canon" "$TARGET/Next-Move-Theory-Canon"
 
 # 2. Skills — the Claude copy to .claude/skills, the Codex copy to .agents/skills.
 #    Copied in place (existing unrelated skills in those dirs are left untouched).
+#    First drop our own renamed skill: nmt-upgrade became nmt-update. Only this
+#    one folder is ever removed; nothing else in those dirs is touched.
+rm -rf "$TARGET/.claude/skills/nmt-upgrade" "$TARGET/.agents/skills/nmt-upgrade"
 cp -r "$SRC"/Skills/claude/. "$TARGET/.claude/skills/"
 cp -r "$SRC"/Skills/codex/.  "$TARGET/.agents/skills/"
 
@@ -98,27 +103,46 @@ cp -r "$SRC"/Skills/codex/.  "$TARGET/.agents/skills/"
 cp "$SRC/README.md" "$TARGET/NextMoveTheory-README.md"
 
 # 3b. Record the installed version (top entry of the changelog) so the skills'
-#     launch-time check can compare it against nextmovetheory.com/version.
-#     Best-effort — never fail the install over this.
+#     end-of-run update check can compare it against the changelog in the public
+#     GitHub repo. Best-effort — never fail the install over this.
 if [ -f "$SRC/CHANGELOG.md" ]; then
   # First heading whose title starts with a digit = the latest release version
   # (skips prose headings like "## Versioning").
   VER="$(grep -m1 -E '^##[[:space:]]+[0-9]' "$SRC/CHANGELOG.md" | sed -E 's/^##[[:space:]]+([^[:space:]]+).*/\1/')"
-  [ -n "$VER" ] && printf '%s\n' "$VER" > "$TARGET/.nmt-version"
+  if [ -n "$VER" ]; then
+    cat > "$TARGET/.nmt-version" <<NMTV
+# Next Move Theory — installed version. Please keep this file.
+# It records which version of the canon + skills you have installed. At the end
+# of a run, the skills read it to check whether a newer version is out and let
+# you know (see "Updates & telemetry" in NextMoveTheory-README.md).
+# Safe to keep, not safe to lose: delete it and update notices simply stop —
+# nothing breaks, but you can silently fall behind on new canon + skills.
+# It's only a few bytes. Refresh everything (including this file) with /nmt-update, or:
+#   curl -fsSL https://raw.githubusercontent.com/zamesin/Next-Move-Theory-Canon-and-Skills/main/install.sh | bash
+# The line below is the installed version — don't edit it.
+$VER
+NMTV
+  fi
 fi
 
-# 4. Inject the rules between markers into existing CLAUDE.md and AGENTS.md
-#    (creates the file if absent; replaces the block in place if markers already exist;
-#    never overwrites your own content).
-python3 - "$SRC" "$TARGET" <<'PY'
+# 4. Inject a short pointer block between the markers into CLAUDE.md and AGENTS.md.
+#    Creates the file if absent. If the markers are already there, ONLY the text
+#    between them is replaced — everything outside the markers (including your own
+#    rules, and the long block older versions of this installer wrote) is kept
+#    byte-for-byte. The block stays deliberately tiny: it points at the canon and
+#    the README instead of duplicating them in every project's rules file.
+python3 - "$TARGET" <<'PY'
 import sys, pathlib
-src, target = pathlib.Path(sys.argv[1]), pathlib.Path(sys.argv[2])
+target = pathlib.Path(sys.argv[1])
 S, E = "<!-- Next-Move-Theory-Rules:start -->", "<!-- Next-Move-Theory-Rules:end -->"
+RULES = """Next Move Theory (NMT) skills are installed in this project.
+
+- Methodology source of truth: ./Next-Move-Theory-Canon/ — for product/strategy work always prefer it over generic Jobs To Be Done knowledge (the definitions differ substantially).
+- New here? Start with /nmt-chat — it routes you to the right skill.
+- Skill outputs go to Skills-Results/ (path configurable per run).
+- Full guide + updates & telemetry policy: ./NextMoveTheory-README.md"""
+block = f"{S}\n{RULES}\n{E}\n"
 for name in ("CLAUDE.md", "AGENTS.md"):
-    rules = (src / name)
-    if not rules.exists():
-        continue
-    block = f"{S}\n" + rules.read_text().rstrip() + f"\n{E}\n"
     t = target / name
     cur = t.read_text() if t.exists() else ""
     if S in cur and E in cur:
@@ -139,31 +163,26 @@ cat <<'EOF'
   Next Move Theory is installed.   Free and open-source.
 ============================================================================
 
-  >>  START HERE — run   /nmt-chat   (Claude Code)   or   $nmt-chat   (Codex)
+  >>  Start with   /nmt-chat   (Claude Code)   or   $nmt-chat   (Codex)
+      — it routes you to the right skill.
 
-      It's the front door to everything here. Paste whatever you have — a
-      rough idea, messy notes, a chat thread, a doc — and it pulls out the
-      context and tells you your next move and which skill to run for your
-      task. No methodologically-perfect brief required.
-
-      Don't know where to start? That is exactly what /nmt-chat is for.
+      Paste whatever you have — a rough idea, messy notes, a chat thread, a
+      doc — and it pulls out the context and tells you your next move. No
+      methodologically-perfect brief required.
 
   --------------------------------------------------------------------------
-  All the skills   (Claude Code: /name   ·   Codex: $name):
+  Where each starting point leads   (Claude Code: /name   ·   Codex: $name)
 
-    nmt-chat                    advice + your next move        <- START HERE
-    nmt-diagnose                live product: find risks & growth points
-    nmt-market-research         new idea: size the market, pick the segment
-    nmt-craft-value-proposition turn a segment into a winning value prop
-    nmt-product-requirements    turn the value into a build-ready PRD
-    nmt-craft-go-to-market      turn the value into landing + ads + growth
-    nmt-analyze-interviews      have interviews? extract the Jobs from them
+    new idea            ->  /nmt-chat  ->  /nmt-market-research
+                        ->  /nmt-craft-value-proposition
+                        ->  /nmt-product-requirements
+                        ->  /nmt-craft-go-to-market
+    live product        ->  /nmt-diagnose
+    interviews on disk  ->  /nmt-analyze-interviews
+    update everything   ->  /nmt-update
 
-  The four producers form a pipeline — jump in wherever you already are:
-    market-research -> craft-value-proposition -> product-requirements
-                                              -> craft-go-to-market
-
-  Still unsure which to run? Run /nmt-chat — it routes you to the right one.
+  Jump in wherever you already are — each skill takes what you hand it, or
+  routes you back to the step it needs first.
   --------------------------------------------------------------------------
 EOF
 echo ""
@@ -179,9 +198,15 @@ cat <<'EOF'
       [features]
       default_mode_request_user_input = true
 
+  Updates & telemetry — skills check for a newer version at the END of a run.
+  The request sends ONLY the skill name and the installed version; no project
+  content and no personal data. Downloads always come from GitHub.
+  Disable: add   update-check: off   to .nmt-config in your project root.
+  Details: ./NextMoveTheory-README.md (section "Updates & telemetry").
+
   Update anytime — safe & idempotent (refreshes canon, skills, and rules in
-  place; leaves your own files untouched):
-      curl -fsSL https://nextmovetheory.com/install.sh | bash
+  place; leaves your own files untouched). Run /nmt-update, or:
+      curl -fsSL https://raw.githubusercontent.com/zamesin/Next-Move-Theory-Canon-and-Skills/main/install.sh | bash
 
   Free & open:   https://github.com/zamesin/Next-Move-Theory-Canon-and-Skills
   New releases:  subscribe at https://nextmovetheory.com

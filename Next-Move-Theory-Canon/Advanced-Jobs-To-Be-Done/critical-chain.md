@@ -8,7 +8,7 @@ The Critical Chain is the Job Graph projected onto a time axis at a chosen Solut
 
 ## 1. A Critical Chain is the sequence of necessary Jobs for a higher-level Job to land
 
-**A Critical Chain of Jobs is the sequence of necessary lower-level Jobs that must all complete for the level-above Job to land.** *Necessary*, not *typical* — only Jobs whose failure breaks the result. The structure recurs at every level of the Job Graph.
+**A Critical Chain of Jobs is the sequence of necessary lower-level Jobs that must all complete for the higher-level Job to land.** *Necessary*, not *typical* — only Jobs whose failure breaks the result. The structure recurs at every level of the Job Graph.
 
 Quick illustrations, each at a single zoom level:
 
@@ -22,19 +22,23 @@ The Big Job behind each lands only when the last Job in the chain completes.
 
 ---
 
-## 2. A Critical Chain is the Job Graph projected onto a time axis — only the lowest-level Jobs appear
+## 2. A Critical Chain is the Job Graph projected onto a time axis — only the Jobs at the bottom of each branch appear
 
-The Job Graph is hierarchical (`Super Big > Big > Core/Small > Micro` — see [AJTBD key theses §9](ajtbd-key-theses.md)). **The Critical Chain is that same graph projected onto a time axis.** Only the lowest-level Jobs at the chosen zoom appear as nodes. Higher-level Jobs aren't act-able at a single moment. They emerge when the atomic acts beneath them complete.
+The Job Graph is hierarchical (`Super Big > Big > Core/Small > Micro` — see [AJTBD key theses §9](ajtbd-key-theses.md)). **The Critical Chain is that same graph projected onto a time axis.** Start from the higher-level Job the chain must land. Take every Job beneath it that has no Jobs of its own beneath it, the bottom of each branch. Line those up in the order they are performed. That is the chain, and its outcome is the landed Job's expected outcome. Higher-level Jobs don't appear as nodes. Nobody performs a higher-level Job at a single moment. It becomes done when the Jobs beneath it complete.
+
+**Those bottom Jobs sit at different depths, because a real Job Graph is unbalanced.** A branch ends for one of two reasons. Either the person performs the Job as a single act and doesn't break it down further, or you chose not to map deeper ([Job Graph §12](job-graph.md)). One branch may end one level below the landed Job while the next runs four levels down. Every branch end goes on the same chain. The chain is not a slice of the Graph at one fixed depth, and zoom is chosen branch by branch.
 
 | Axis | Job Graph | Critical Chain |
 |---|---|---|
 | **Structure** | Hierarchy | Sequence on a time axis |
-| **What is a node** | Every level | Only the lowest-level Jobs at the chosen zoom |
+| **What is a node** | Every level | Only the Job at the bottom of each branch, at whatever depth that branch ends |
 | **What it drives** | Strategy — which Core Jobs and segments to compete on | Design & engineering — flows, hand-offs, latency, cycles |
 
 Worked example. Take the Big Job *"get to my client meeting at 10 a.m. downtown."* At Core-Job zoom the chain is `leave the house → get from A to B → walk into the meeting`. The Big Job lands the moment the last node completes, and only if every node before it did. If `get from A to B` breaks, the chain stops there and the Big Job doesn't land.
 
-Now zoom into one node, `get from A to B`, the Core Job Uber performs. At this deeper zoom it opens into a chain of its own: `open the app → enter the destination → confirm the pickup → wait for the driver → ride to the door`. **Zoom is relative: a single node at one zoom is the whole chain at the next zoom down.**
+Now zoom into one node, `get from A to B`, the Core Job Uber performs. For this person it breaks down into `open the app → enter the destination → confirm the pickup → wait for the driver → ride to the door`. `leave the house` and `walk into the meeting` stay single acts. On the Big Job's chain, `get from A to B` drops off the line and its five acts take its place. The chain now has seven nodes. Five sit two levels below the Big Job, two sit one level below, and all seven are on one line. **Zoom is relative: a single node at one zoom is the whole chain at the next zoom down.**
+
+**A chain is well-formed only if no node is an ancestor of another node on the same line.** A Job and one of its own lower-level Jobs never sit side by side. `pick a neighborhood → tour homes → walk through the kitchen → make an offer` fails, because walking through the kitchen happens inside `tour homes`, not next to it.
 
 Choose zoom by the analytical question. Strategy points to Core. Design and engineering point to Micro. Activation points to the Micro Jobs up to and including the activation moment (the first Aha). Sub-segment failures point to whichever zoom surfaces the break.
 

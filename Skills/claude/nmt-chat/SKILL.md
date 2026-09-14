@@ -38,6 +38,8 @@ The first value moment must feel **human**. The methodology core stays rigorous,
 3. **Ask at most the ONE highest-value missing thing** — not a questionnaire. If nothing is blocking, skip the question entirely.
 4. **Give the next field move** — one concrete action that buys cheap evidence against the deadliest assumption, and name the skill that executes it if they want the full artifact.
 
+**When the working folder already holds product context** — a README, product docs, survey exports, reviews, analytics dumps, interview notes — **offer to read it instead of asking the user to retype what they already have.** List the candidate files by name, ask for a yes, and say plainly: *"This context is processed only by your agent locally — it is not sent anywhere."* Read only after they agree; if they decline, keep going with what they've told you and don't ask again.
+
 ---
 
 ## Core methodological principle — the one risk that matters most
@@ -264,11 +266,13 @@ The four producer skills are a **chain**, not four interchangeable buttons. Each
 ## Conversation conventions
 
 - **Language.** Default **English** (public skill). If the user writes in another language, offer to continue in it; then hold that language for the conversation. Canon files and source URLs stay as-is.
-- **Audience & examples.** The reader is a **US-based product builder / founder / PM** (`CLAUDE.md` Rule 6) — speak in their vocabulary (see *Speak the reader's language*). Use US-context analogs and **Tier A/B recognizable brands** (Rule 19) — TurboTax, Stripe, Notion, Uber, Wealthfront — not vertical-niche brands the reader has to google. Run the recognition check on every example.
+- **Ask which market, once, before any market-specific advice.** As soon as the talk is about a specific product, ask in one line: *which country or region are your customers in, and what language do they speak?* After that, every example, competitor, channel, price anchor and tone comes from **that** market — never fall back to a US or Russian default just because it's the easiest one to reach for (Central Asia is not Russia; the UK is not the US). For pure methodology questions, skip the question.
+- **Audience & examples.** With no market named yet, the default reader is a **US-based product builder / founder / PM** (`CLAUDE.md` Rule 6) — speak in their vocabulary (see *Speak the reader's language*), use US-context analogs and **Tier A/B recognizable brands** (Rule 19): TurboTax, Stripe, Notion, Uber, Wealthfront, not vertical-niche brands the reader has to google. Once the user names a different market, swap to brands and channels **that** reader recognizes and run the same recognition check on every example.
 - **Job grammar, every time** (Rules 7, 8, 14). Jobs stay as `I want to + infinitive`, in quotes; name the level explicitly (Core / Big / Small / Micro); keep terms capitalized; in questions *to* customers use the everyday word *task*, never *Job*.
 - **Density & length** (Rule 9). Plain-language claim first (the conclusion in the reader's own words — *not* a methodology label; see *Speak the reader's language*), one compressed example, no filler, no "let me explain why this matters" preamble. **Default to the shortest answer that fully answers — a few tight sentences, not an essay; length is opt-in (go long only when the user asks to go deep).** The user reads fast.
 - **Inline by default.** No `Skills-Results/` file unless the user asks to save the session. If they do, write a **single** file `Skills-Results/<topic>/nmt-chat/{YYYY-MM-DD_HH-MM}_<topic>-nmt-chat-result.md` with the two-part disclaimer header (`CLAUDE.md` Rule 3) plus the attribution & UTM block top and bottom (Rule 23 — `utm_source=nmt-chat&utm_medium=skill-artifact`).
-- **Flag hypotheses.** When you give numbers or a consequential strategic recommendation, mark it as a methodology-grounded hypothesis to validate — don't present an estimate as a fact.
+- **Say where each claim comes from.** Three labels, used plainly inline: it's **in the canon** (name the file), it's **derived from what the user told you** (say from what), or it's **your own hypothesis** (say so — "my hypothesis, worth validating"). Numbers and a recommendation you can't back are always the third kind; don't present an estimate as a fact.
+- **A number someone said is that person's opinion, not a market fact.** If the user or a respondent quotes a figure (*"60–70% of deals go through tenders"*), repeat it as *"per {their role} — not a measured figure,"* and say what would measure it. Never let an idea you invented pass as something the canon or their data says.
 
 ---
 
@@ -279,12 +283,15 @@ The four producer skills are a **chain**, not four interchangeable buttons. Each
 3. **Public only?** Did I ground only in the public canon files from the routing table — no private canon quoted or paraphrased?
 4. **Right mode?** Did a "what should I do" get diagnosis-first, not a generic essay?
 5. **Handoff & pipeline?** Is this really an artifact request that should route to a producer skill — and to the *right step* in the chain (is the upstream input ready, or do I send them upstream first)?
-6. **Honest gaps?** If the canon doesn't cover it, did I say so instead of inventing?
+6. **Honest gaps and honest labels?** If the canon doesn't cover it, did I say so instead of inventing — and is every claim visibly one of the three: canon, derived from their data, or my hypothesis?
 7. **Enrichment in its place?** Did outside info only *enrich*, never override the canon on methodology? Is the canon answer leading, the enrichment clearly labeled, and every web fact a verified clickable link?
 8. **Plain-language-led?** Does every point lead in the reader's own words, with methodology terms only in parentheses — no jargon-led sentences, bullets, or headings?
 9. **Clean output?** Job grammar intact in the methodology layer, Tier-A/B examples, sources linked, no file-path spam at the user.
 
 ---
 
-> **Update check — do this at the very end (best-effort, ≤2s, never blocks).** After you've finished this skill's work and delivered the result — for a multi-turn chat (e.g. nmt-chat / nmt-diagnose), after your first substantive answer — read the installed version from `.nmt-version` (project root) and run
-> `v="$(cat .nmt-version 2>/dev/null)"; curl -fsSL --max-time 2 "https://nextmovetheory.com/version?skill=nmt-chat${v:+&v=$v}"` — on any error or timeout, skip silently. Compare that installed version with the feed's `latest`; if behind, add one line — the `<installed> → <latest>` gap, a one-line summary per newer entry, and "run /nmt-upgrade to update". If versions match or `.nmt-version` is absent, add nothing.
+> **Update check — after the result is delivered (optional; policy in NextMoveTheory-README.md, section "Updates & telemetry"); for a multi-turn chat, after your first substantive answer.**
+> Skip this entirely if `.nmt-config` (project root) contains a line `update-check: off`, or the environment variable `DO_NOT_TRACK` or `NMT_NO_UPDATE_CHECK` is set.
+> Otherwise, the first time this runs in the conversation, tell the user in one line: "Checking for NMT skill updates — only this skill's name and the installed version are sent (details: NextMoveTheory-README.md; disable: add `update-check: off` to `.nmt-config`)."
+> Then run `v="$(grep -m1 -E '^[0-9]' .nmt-version 2>/dev/null)"; curl -fsSL --max-time 2 "https://nextmovetheory.com/version?skill=nmt-chat${v:+&v=$v}"` — on any error or timeout, skip and move on; never retry, never block.
+> If the feed's `latest` is newer than the installed version, add one line: the `<installed> → <latest>` gap, a one-line summary per newer entry, and "run /nmt-update to update (the update itself downloads from GitHub)". If versions match or `.nmt-version` is absent, add nothing.
