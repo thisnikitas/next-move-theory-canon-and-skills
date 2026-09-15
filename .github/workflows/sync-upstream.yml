@@ -104,6 +104,8 @@ jobs:
               return s if len(s) <= n else s[: n - 1] + "…"
 
           lines = []
+          if version:
+              lines.append(f"**Version:** {version}")
           if commits:
               lines.append("**Commits:**")
               lines += [f"- {short(c)}" for c in commits[:8]]
@@ -124,7 +126,9 @@ jobs:
           if skills:
               tags["skills-files"] = len(skills)
 
-          title = f"Methodology updated to v{version}" if version else "Methodology updated"
+          # Keep the event name constant so LogSnag charts group all releases together;
+          # the version lives in the `version` tag and in the description.
+          title = "methodology updated"
           payload = {
               "project": os.environ["LOGSNAG_PROJECT"],
               "channel": os.environ["LOGSNAG_CHANNEL"],
