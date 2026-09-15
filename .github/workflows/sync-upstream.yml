@@ -140,6 +140,7 @@ jobs:
               data=json.dumps(payload).encode(),
               headers={
                   "Content-Type": "application/json",
+                  "User-Agent": "github-actions-logsnag-sync/1.0",
                   "Authorization": "Bearer " + os.environ["LOGSNAG_TOKEN"],
               },
           )
@@ -172,6 +173,7 @@ jobs:
               "https://api.logsnag.com/v1/log",
               data=json.dumps(payload).encode(),
               headers={"Content-Type": "application/json",
+                       "User-Agent": "github-actions-logsnag-sync/1.0",
                        "Authorization": "Bearer " + os.environ["LOGSNAG_TOKEN"]},
           )
           try:
