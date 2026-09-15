@@ -3,25 +3,173 @@ name: Sync fork from upstream
 # Keeps this fork's `main` up to date with the original repository.
 # Runs once a day on a schedule, and can also be triggered manually
 # from the Actions tab ("Run workflow").
+#
+# When the sync actually brings in new commits, a "Methodology updated"
+# event is sent to LogSnag with a short summary of what changed.
+# Nothing is sent when `main` is already up to date. A failed sync
+# sends a separate "Sync failed" event so problems are not silent.
 
 on:
   schedule:
     # 06:00 UTC every day. Edit the cron to change the cadence.
     - cron: "0 6 * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force_notify:
+        description: "Send a test LogSnag event for the latest commit even if nothing changed"
+        type: boolean
+        default: false
 
 # Allow the built-in token to push the synced commits back to `main`.
 permissions:
   contents: write
 
+env:
+  UPSTREAM: zamesin/Next-Move-Theory-Canon-and-Skills
+  LOGSNAG_PROJECT: main
+  LOGSNAG_CHANNEL: zamesin-updates
+
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Remember current main
+        id: before
+        run: echo "sha=$(git rev-parse origin/main)" >> "$GITHUB_OUTPUT"
+
       - name: Sync main from upstream
+        id: sync
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh repo sync ${{ github.repository }} \
-            --source zamesin/Next-Move-Theory-Canon-and-Skills \
+            --source "$UPSTREAM" \
             --branch main
+
+      - name: Detect changes
+        id: after
+        run: |
+          git fetch --quiet origin main
+          AFTER=$(git rev-parse origin/main)
+          echo "sha=$AFTER" >> "$GITHUB_OUTPUT"
+          if [ "$AFTER" != "${{ steps.before.outputs.sha }}" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "main moved: ${{ steps.before.outputs.sha }} -> $AFTER"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "main unchanged, nothing to report"
+          fi
+
+      - name: Notify LogSnag about the update
+        if: steps.after.outputs.changed == 'true' || inputs.force_notify == true
+        env:
+          LOGSNAG_TOKEN: ${{ secrets.LOGSNAG_TOKEN }}
+          BEFORE: ${{ steps.before.outputs.sha }}
+          AFTER: ${{ steps.after.outputs.sha }}
+          CHANGED: ${{ steps.after.outputs.changed }}
+          REPO: ${{ github.repository }}
+        run: |
+          # On a forced test run with no real change, describe the latest commit only.
+          if [ "$CHANGED" != "true" ]; then
+            BEFORE=$(git rev-parse "$AFTER~1")
+          fi
+          RANGE="$BEFORE..$AFTER"
+
+          git log --no-merges --format='%s' "$RANGE" > /tmp/commits.txt
+          git diff --name-only "$BEFORE" "$AFTER" > /tmp/files.txt
+
+          python3 - <<'PY'
+          import json, os, re, urllib.request
+
+          before, after, repo = os.environ["BEFORE"], os.environ["AFTER"], os.environ["REPO"]
+          commits = [l.strip() for l in open("/tmp/commits.txt") if l.strip()]
+          files = [l.strip() for l in open("/tmp/files.txt") if l.strip()]
+          canon = [f for f in files if f.startswith("Next-Move-Theory-Canon/")]
+          skills = [f for f in files if f.startswith("Skills/")]
+          other = [f for f in files if f not in canon and f not in skills]
+
+          version = ""
+          for c in commits:
+              m = re.match(r"^(?:v|Release\s+)?(\d+\.\d+\.\d+)\b", c)
+              if m:
+                  version = m.group(1)
+                  break
+
+          def short(s, n=160):
+              return s if len(s) <= n else s[: n - 1] + "…"
+
+          lines = []
+          if commits:
+              lines.append("**Commits:**")
+              lines += [f"- {short(c)}" for c in commits[:8]]
+              if len(commits) > 8:
+                  lines.append(f"- … and {len(commits) - 8} more")
+          parts = []
+          if canon: parts.append(f"canon {len(canon)}")
+          if skills: parts.append(f"skills {len(skills)}")
+          if other: parts.append(f"other {len(other)}")
+          lines.append(f"**Files changed:** {len(files)} ({', '.join(parts)})")
+          lines.append(f"[Compare on GitHub](https://github.com/{repo}/compare/{before[:12]}...{after[:12]})")
+
+          tags = {"commits": len(commits), "files": len(files)}
+          if version:
+              tags["version"] = version
+          if canon:
+              tags["canon-files"] = len(canon)
+          if skills:
+              tags["skills-files"] = len(skills)
+
+          title = f"Methodology updated to v{version}" if version else "Methodology updated"
+          payload = {
+              "project": os.environ["LOGSNAG_PROJECT"],
+              "channel": os.environ["LOGSNAG_CHANNEL"],
+              "event": title,
+              "description": "\n".join(lines),
+              "icon": "📚",
+              "parser": "markdown",
+              "notify": True,
+              "tags": tags,
+          }
+          req = urllib.request.Request(
+              "https://api.logsnag.com/v1/log",
+              data=json.dumps(payload).encode(),
+              headers={
+                  "Content-Type": "application/json",
+                  "Authorization": "Bearer " + os.environ["LOGSNAG_TOKEN"],
+              },
+          )
+          with urllib.request.urlopen(req, timeout=30) as r:
+              print("LogSnag:", r.status, r.read().decode()[:300])
+          PY
+
+      - name: Notify LogSnag about a failed sync
+        if: failure() && steps.sync.outcome == 'failure'
+        env:
+          LOGSNAG_TOKEN: ${{ secrets.LOGSNAG_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request
+          payload = {
+              "project": os.environ["LOGSNAG_PROJECT"],
+              "channel": os.environ["LOGSNAG_CHANNEL"],
+              "event": "Sync failed",
+              "description": f"Fork could not be synced from upstream. [Open the run]({os.environ['RUN_URL']})",
+              "icon": "⚠️",
+              "parser": "markdown",
+              "notify": True,
+          }
+          req = urllib.request.Request(
+              "https://api.logsnag.com/v1/log",
+              data=json.dumps(payload).encode(),
+              headers={"Content-Type": "application/json",
+                       "Authorization": "Bearer " + os.environ["LOGSNAG_TOKEN"]},
+          )
+          with urllib.request.urlopen(req, timeout=30) as r:
+              print("LogSnag:", r.status)
+          PY
